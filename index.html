@@ -396,15 +396,53 @@ async function loadCakes() {
   }
 }
 
-async function postToSheet(payload) {
-  // Apps Script antwortet auf POST mit einem Redirect, den der Browser
-  // aus CORS-Gruenden nicht lesen darf. no-cors laesst den Schreibvorgang
-  // trotzdem durchlaufen - wir koennen die Antwort nur nicht auslesen.
-  return fetch(APPS_SCRIPT_URL, {
-    method: 'POST',
-    mode: 'no-cors',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify(payload)
+function postToSheet(payload) {
+  // Ein echtes Formular in einem versteckten iframe abschicken.
+  // Das ist eine normale Browser-Navigation, keine XHR/fetch-Anfrage,
+  // deshalb greifen CORS-Regeln hier gar nicht erst.
+  return new Promise(function (resolve, reject) {
+    const frameName = 'sheetFrame_' + Date.now();
+
+    const iframe = document.createElement('iframe');
+    iframe.name = frameName;
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = APPS_SCRIPT_URL;
+    form.target = frameName;
+    form.style.display = 'none';
+
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'payload';
+    input.value = JSON.stringify(payload);
+    form.appendChild(input);
+
+    document.body.appendChild(form);
+
+    let settled = false;
+    function cleanup() {
+      if (form.parentNode) form.parentNode.removeChild(form);
+      setTimeout(function () { if (iframe.parentNode) iframe.parentNode.removeChild(iframe); }, 500);
+    }
+
+    iframe.addEventListener('load', function () {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      resolve();
+    });
+
+    setTimeout(function () {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      reject(new Error('Zeit\u00fcberschreitung beim Schreiben ins Sheet (20 Sekunden).'));
+    }, 20000);
+
+    form.submit();
   });
 }
 

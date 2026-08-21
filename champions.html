@@ -1,0 +1,651 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cake Trials &ndash; Die Champions</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,900;1,9..144,600&family=Inter:wght@400;600;800&display=swap');
+
+  :root {
+    --stage: #170D13; --stage-2: #2A1822;
+    --gold: #E3B23C; --gold-soft: #F2D98A;
+    --blush: #E29AA6; --cream: #F7F1E6;
+    --ink-dim: #A8968F; --alarm: #E0453C;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 28px 18px 120px; overflow-x: hidden;
+    background: radial-gradient(ellipse at 50% -10%, var(--stage-2) 0%, var(--stage) 65%);
+    background-attachment: fixed; color: var(--cream);
+    font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased;
+  }
+  body.shake { animation: shake .5s; }
+  @keyframes shake {
+    0%,100%{transform:translate(0,0)} 10%{transform:translate(-9px,4px)} 20%{transform:translate(8px,-5px)}
+    30%{transform:translate(-7px,-3px)} 40%{transform:translate(6px,5px)} 50%{transform:translate(-5px,3px)}
+    60%{transform:translate(5px,-4px)} 70%{transform:translate(-4px,2px)} 80%{transform:translate(3px,3px)} 90%{transform:translate(-2px,-2px)}
+  }
+
+  /* Spotlight sweep */
+  #spot { position: fixed; inset: 0; pointer-events: none; z-index: 1; opacity: 0; transition: opacity .6s; }
+  #spot.on { opacity: 1; }
+  #spot::before {
+    content:''; position:absolute; top:-40%; left:50%; width: 62vw; height: 190vh;
+    transform-origin: top center; transform: translateX(-50%) rotate(0deg);
+    background: linear-gradient(to bottom, rgba(255,235,180,.20), rgba(255,235,180,0) 72%);
+    filter: blur(26px); animation: sweep 5.5s ease-in-out infinite alternate;
+  }
+  @keyframes sweep { from{transform:translateX(-50%) rotate(-16deg)} to{transform:translateX(-50%) rotate(16deg)} }
+
+  .wrap { max-width: 880px; margin: 0 auto; position: relative; z-index: 3; }
+  a.back { color: var(--ink-dim); font-size: 13px; text-decoration: none; font-weight: 600; display: inline-block; margin-bottom: 18px; }
+  a.back:hover { color: var(--gold); }
+
+  header.page { text-align: center; margin-bottom: 26px; }
+  .eyebrow { font-size: 11px; letter-spacing: .3em; text-transform: uppercase; color: var(--gold); font-weight: 800; margin-bottom: 12px; }
+  h1 {
+    font-family: 'Fraunces', serif; font-weight: 900; font-size: clamp(34px, 8.4vw, 64px);
+    margin: 0 0 12px; line-height: .95; letter-spacing: -.025em;
+    background: linear-gradient(180deg, #FFF6DC, var(--gold) 60%, #B3801C);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    text-shadow: 0 0 60px rgba(227,178,60,.28);
+  }
+  .sub { color: var(--ink-dim); font-size: 14.5px; max-width: 540px; margin: 0 auto; line-height: 1.6; }
+  .sponsor { margin-top: 14px; font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: rgba(168,150,143,.65); }
+
+  .cta-wrap { text-align: center; margin: 32px 0 6px; }
+  .btn-reveal {
+    font-family: 'Fraunces', serif; font-size: 21px; font-weight: 600; font-style: italic;
+    background: linear-gradient(180deg, var(--gold-soft), var(--gold)); color: #2A1822;
+    border: none; cursor: pointer; padding: 17px 42px; border-radius: 999px;
+    animation: pulse 2.2s infinite; transition: transform .15s ease;
+  }
+  .btn-reveal:hover { transform: scale(1.05) rotate(-1deg); }
+  .btn-reveal:disabled { opacity: .35; animation: none; cursor: default; transform: none; }
+  @keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(227,178,60,.55)} 70%{box-shadow:0 0 0 30px rgba(227,178,60,0)} 100%{box-shadow:0 0 0 0 rgba(227,178,60,0)} }
+
+  .btn-small {
+    font-family:'Inter',sans-serif; font-size:13px; font-weight:700; background:transparent;
+    color:var(--gold); border:1.5px solid var(--gold); padding:10px 20px; border-radius:999px; cursor:pointer; margin-top:18px;
+  }
+  .btn-small:hover { background: rgba(227,178,60,.12); }
+
+  /* Overlay */
+  #overlay { position: fixed; inset: 0; z-index: 60; display: none; align-items: center; justify-content: center; flex-direction: column; background: rgba(12,6,10,.96); text-align: center; padding: 20px; }
+  #overlay.on { display: flex; }
+  #overlay.alarm { background: rgba(70,8,8,.97); }
+  #countNum { font-family:'Fraunces',serif; font-weight:900; font-size:clamp(80px,26vw,210px); color:var(--gold); line-height:1; }
+  #overlay.alarm #countNum { color: #FFD9D6; font-size: clamp(44px,13vw,110px); }
+  #countWord { font-family:'Fraunces',serif; font-style:italic; font-size:clamp(17px,4.6vw,28px); color:var(--cream); margin-top:14px; max-width:640px; line-height:1.35; }
+  .pop { animation: pop .5s ease-out; }
+  @keyframes pop { 0%{transform:scale(.3);opacity:0} 60%{transform:scale(1.18);opacity:1} 100%{transform:scale(1);opacity:1} }
+
+  /* Beglaubigung */
+  #notar { max-width: 420px; width: 100%; margin-top: 26px; text-align: left; }
+  #notarStep { font-size: 13.5px; color: var(--gold-soft); font-family:'Inter',sans-serif; min-height: 20px; }
+  .bar { height: 7px; background: rgba(255,255,255,.13); border-radius: 99px; overflow: hidden; margin-top: 10px; }
+  .bar > i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--gold), var(--gold-soft)); transition: width .5s ease; }
+
+  .announcer { text-align:center; font-family:'Fraunces',serif; font-style:italic; font-size:clamp(15px,3.6vw,21px); color:var(--blush); min-height:34px; margin:24px 0 4px; line-height:1.4; }
+
+  /* Applausometer */
+  #applause { max-width: 440px; margin: 6px auto 0; display: none; }
+  #applause.on { display: block; }
+  .app-label { font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-dim); font-weight:800; display:flex; justify-content:space-between; }
+  .app-bar { height: 12px; background: rgba(255,255,255,.1); border-radius: 99px; overflow: hidden; margin-top: 6px; }
+  .app-fill { height:100%; width:0; border-radius:99px; background: linear-gradient(90deg,#7E9A78,var(--gold),var(--alarm)); transition: width .8s cubic-bezier(.2,.9,.3,1); }
+  .app-note { font-size:11.5px; color:var(--ink-dim); margin-top:6px; text-align:center; font-style:italic; }
+
+  #podium { display:flex; flex-direction:column; gap:16px; margin-top:20px; }
+  .champ {
+    background: linear-gradient(160deg, rgba(255,255,255,.07), rgba(255,255,255,.02));
+    border:1px solid rgba(227,178,60,.28); border-radius:18px; padding:22px 24px;
+    display:grid; grid-template-columns:82px 1fr auto; gap:18px; align-items:center;
+    opacity:0; transform:translateY(28px) scale(.97);
+  }
+  .champ.show { animation: rise .85s cubic-bezier(.2,.9,.3,1) forwards; }
+  @keyframes rise { to { opacity:1; transform:translateY(0) scale(1); } }
+  .champ.gold {
+    border-color: var(--gold); box-shadow: 0 0 60px rgba(227,178,60,.3);
+    background: linear-gradient(160deg, rgba(227,178,60,.2), rgba(255,255,255,.02));
+  }
+  .champ.gold.crowned { animation: rise .85s cubic-bezier(.2,.9,.3,1) forwards, glow 2.6s ease-in-out infinite 1s; }
+  @keyframes glow { 0%,100%{box-shadow:0 0 50px rgba(227,178,60,.26)} 50%{box-shadow:0 0 90px rgba(227,178,60,.5)} }
+  .champ.fake { border-color: rgba(255,255,255,.2); }
+  .champ.retracted { animation: yeet .9s cubic-bezier(.5,-0.4,.7,1) forwards; }
+  @keyframes yeet { to { opacity:0; transform: translateX(130%) rotate(14deg); } }
+  @media (max-width: 560px) {
+    .champ { grid-template-columns:56px 1fr; padding:18px; gap:12px; }
+    .champ .score-box { grid-column:1/-1; display:flex; align-items:baseline; gap:8px; }
+  }
+  .rank { font-family:'Fraunces',serif; font-weight:900; font-size:46px; text-align:center; line-height:1; }
+  .champ.gold .rank { color:var(--gold); font-size:58px; }
+  .champ.silver .rank { color:#C9CBD1; }
+  .champ.bronze .rank { color:#C08B5C; }
+  .rank small { display:block; font-size:9.5px; letter-spacing:.1em; text-transform:uppercase; font-family:'Inter',sans-serif; font-weight:800; color:var(--ink-dim); margin-top:4px; }
+  .champ-name { font-family:'Fraunces',serif; font-size:23px; font-weight:600; margin:0; line-height:1.15; }
+  .champ.gold .champ-name { font-size:28px; }
+  .champ-flavor { font-size:12.5px; color:var(--ink-dim); margin-top:3px; }
+  .champ-quip { font-size:13px; color:var(--blush); margin-top:8px; font-style:italic; line-height:1.45; }
+  .champ-tags { margin-top:9px; display:flex; gap:5px; flex-wrap:wrap; }
+  .champ-tags span { font-size:10px; background:rgba(227,178,60,.14); color:var(--gold-soft); padding:3px 9px; border-radius:999px; font-weight:700; }
+  .score-box { text-align:right; }
+  .score-num { font-family:'Fraunces',serif; font-weight:900; font-size:34px; color:var(--gold); line-height:1; }
+  .score-lbl { font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-dim); font-weight:800; }
+
+  .awards-head { text-align:center; margin:56px 0 4px; font-family:'Fraunces',serif; font-size:26px; color:var(--gold); font-weight:600; }
+  .awards-sub { text-align:center; color:var(--ink-dim); font-size:13px; margin-bottom:22px; font-style:italic; }
+  #awards { display:grid; grid-template-columns:repeat(auto-fill,minmax(232px,1fr)); gap:12px; }
+  .award { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.09); border-radius:14px; padding:16px 18px; opacity:0; animation:rise .6s ease-out forwards; }
+  .award .emoji { font-size:23px; }
+  .award .a-title { font-family:'Fraunces',serif; font-size:15px; font-weight:600; color:var(--gold-soft); margin:6px 0 4px; }
+  .award .a-winner { font-size:14.5px; font-weight:700; }
+  .award .a-note { font-size:11.5px; color:var(--ink-dim); margin-top:4px; line-height:1.5; }
+
+  .stats-head { text-align:center; margin:52px 0 16px; font-family:'Fraunces',serif; font-size:22px; color:var(--gold); font-weight:600; }
+  #stats { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px; }
+  .stat { background:rgba(255,255,255,.03); border-radius:12px; padding:14px; text-align:center; }
+  .stat .s-num { font-family:'Fraunces',serif; font-weight:900; font-size:26px; color:var(--gold-soft); }
+  .stat .s-lbl { font-size:11px; color:var(--ink-dim); margin-top:3px; line-height:1.4; }
+
+  /* Ticker */
+  #ticker { position: fixed; bottom: 0; left: 0; right: 0; z-index: 30; background: rgba(224,69,60,.93); color: #fff; font-size: 12.5px; font-weight: 700; padding: 9px 0; overflow: hidden; white-space: nowrap; display: none; }
+  #ticker.on { display: block; }
+  #ticker .track { display: inline-block; padding-left: 100%; animation: slide 90s linear infinite; }
+  #ticker b { color: #FFE9A8; margin: 0 6px; }
+  #ticker span { margin-right: 70px; }
+  @keyframes slide { from{transform:translateX(0)} to{transform:translateX(-100%)} }
+
+  .msg { text-align:center; color:var(--ink-dim); font-size:14px; padding:40px 20px; line-height:1.65; }
+  .msg b { color:var(--gold-soft); font-family:'Fraunces',serif; font-size:20px; display:block; margin-bottom:10px; font-weight:600; }
+
+  #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 45; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .btn-reveal, #spot::before, #ticker .track, .champ.gold.crowned { animation: none !important; }
+    .champ, .award { opacity: 1; transform: none; }
+    body.shake { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="confetti"></canvas>
+<div id="spot"></div>
+
+<div id="overlay">
+  <div id="countNum">3</div>
+  <div id="countWord"></div>
+  <div id="notar" style="display:none;">
+    <div id="notarStep"></div>
+    <div class="bar"><i id="notarBar"></i></div>
+  </div>
+</div>
+
+<div id="ticker"><div class="track" id="tickerTrack"></div></div>
+
+<div class="wrap">
+  <a class="back" href="index.html">&larr; Zur&uuml;ck zur Liste</a>
+
+  <header class="page">
+    <div class="eyebrow">Gala-Abend &middot; Live &middot; Ausverkauft</div>
+    <h1>Die amtierenden<br />Champions</h1>
+    <p class="sub">Zehn Kategorien. Unz&auml;hlige Gabeln. Ein Ergebnis, das die Kuchenwelt in ihren Grundfesten ersch&uuml;ttern wird &ndash; oder zumindest unsere K&uuml;che.</p>
+    <div class="sponsor">Pr&auml;sentiert von: Butter. Sehr viel Butter.</div>
+  </header>
+
+  <div class="cta-wrap">
+    <button class="btn-reveal" id="revealBtn">Enth&uuml;llung starten</button>
+  </div>
+
+  <div class="announcer" id="announcer"></div>
+
+  <div id="applause">
+    <div class="app-label"><span>Applausometer</span><span id="appVal">0 dB</span></div>
+    <div class="app-bar"><div class="app-fill" id="appFill"></div></div>
+    <div class="app-note" id="appNote"></div>
+  </div>
+
+  <div id="podium"></div>
+  <div id="awardsWrap"></div>
+  <div id="statsWrap"></div>
+  <div id="msg"></div>
+</div>
+
+<script>
+// ======= HIER DIESELBE URL WIE AUF DER HAUPTSEITE EINTRAGEN =======
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbywBvQJrxYYN8ukdUPKcuR1VB_3-nWFWdTyFwfyQPD_SKXI1nkPBUhPgwTjrKZzlpkd/exec';
+// ==================================================================
+
+const SCALE_MAX = 7;
+const RATING_CRITERIA = [
+  { key:'taste', label:'Geschmack', genuss:true },
+  { key:'sweetness', label:'S\u00fc\u00dfe-Balance', genuss:true },
+  { key:'heaviness', label:'F\u00fcllig', genuss:true, invertiert:true },
+  { key:'texture', label:'Textur', genuss:true },
+  { key:'appearance', label:'Optik', genuss:true },
+  { key:'crowdPleaser', label:'Gef\u00e4llt allen', genuss:true },
+  { key:'heat', label:'Hitzebest\u00e4ndigkeit' },
+  { key:'makeAhead', label:'Vorbereitbarkeit' },
+  { key:'transport', label:'Transport' },
+  { key:'doability', label:'Machbarkeit' }
+];
+const GENUSS = RATING_CRITERIA.filter(c => c.genuss);
+const TAG_KEYS = ['flavourTags','frostingTags','styleTags','seasonTags','formTags'];
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let cakes = [];
+
+function num(v){ const n = Number(v); return isNaN(n) ? 0 : n; }
+function overall(c){
+  return GENUSS.reduce(function(a,k){
+    const v = num(c[k.key]); return a + (k.invertiert ? SCALE_MAX - v : v);
+  },0) / GENUSS.length;
+}
+function esc(s){ const d=document.createElement('div'); d.textContent=(s==null?'':String(s)); return d.innerHTML; }
+function tagsOf(c){ let o=[]; TAG_KEYS.forEach(function(k){ String(c[k]||'').split(',').map(function(t){return t.trim();}).filter(Boolean).forEach(function(t){o.push(t);}); }); return o; }
+function sleep(ms){ return new Promise(function(r){ setTimeout(r, reduceMotion ? Math.min(ms,140) : ms); }); }
+function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+
+// ---------- Texte ----------
+const JURY_LINES = [
+  'Die Jury hat getagt. Die Jury hat gelitten. Die Jury bereut nichts.',
+  'Sieben Stunden Beratung. Zwei Trag\u00f6dien. Ein Ergebnis.',
+  'Die Jury musste dreimal Pause machen. Aus Gr\u00fcnden.',
+  'Es wurde geweint. Es wurde nachgeschnitten.'
+];
+const NOTAR_FIX = [
+  { t: 'Stimmzettel werden entfaltet \u2026', ms: 1900 },
+  { t: 'Kr\u00fcmel werden von den Stimmzetteln entfernt \u2026', ms: 2200 },
+  { t: 'Notarielle Beglaubigung l\u00e4uft \u2026', ms: 2000 },
+  { t: 'Bestechungsversuche werden gepr\u00fcft \u2026', ms: 2100 },
+  { t: 'Ein Bestechungsversuch wurde festgestellt.', ms: 2900 },
+  { t: 'Bestechungsversuch wird zur Kenntnis genommen \u2026', ms: 2200 },
+  { t: 'Bestechungsversuch wird ignoriert.', ms: 2400 },
+  { t: 'Ergebnis wird versiegelt \u2026', ms: 2000 }
+];
+// Aus diesem Topf werden pro Durchlauf zwei zuf\u00e4llige Schritte eingestreut
+const NOTAR_EXTRA = [
+  { t: 'Handschrift von Jury-Mitglied 2 wird entziffert \u2026', ms: 2300 },
+  { t: 'Ein Zettel enth\u00e4lt nur ein Herz. Wird gewertet.', ms: 2600 },
+  { t: 'Doppelte Stimmabgabe wird gepr\u00fcft \u2026', ms: 2200 },
+  { t: 'Doppelte Stimmabgabe war Oma. Wird akzeptiert.', ms: 2700 },
+  { t: 'Fettfleck auf Formular B wird begutachtet \u2026', ms: 2300 },
+  { t: 'Ein Stimmzettel wurde versehentlich mitgegessen \u2026', ms: 2700 },
+  { t: 'Interessenkonflikt gemeldet: jemand mag Schokolade zu sehr.', ms: 2700 },
+  { t: 'Nachz\u00e4hlung auf ausdr\u00fccklichen Wunsch der Jury \u2026', ms: 2300 },
+  { t: 'Der Notar bittet um ein St\u00fcck. Antrag stattgegeben.', ms: 2700 },
+  { t: 'Taschenrechner wird neu gestartet \u2026', ms: 2000 }
+];
+const QUIPS_1 = [
+  'H\u00e4tte auch ohne Wettbewerb gewonnen. Aber wir wollten ganz sichergehen. Achtmal.',
+  'Wurde beim Probieren zweimal nachgeschnitten. Der Rest ist Geschichte.',
+  'Der einzige Kandidat, bei dem niemand &bdquo;nur ein ganz kleines St\u00fcck&ldquo; gesagt hat.',
+  'Regiert bis auf Weiteres. Herausforderer m\u00f6gen sich hinten anstellen.'
+];
+const QUIPS_2 = [
+  'So knapp dahinter, dass wir es ihm nie erz\u00e4hlen werden.',
+  'Silber. Also: der beste Kuchen f\u00fcr alle, die zu sp\u00e4t zur Feier kommen.',
+  'H\u00e4tte gewonnen. In einem anderen Universum. Mit einer anderen Jury.'
+];
+const QUIPS_3 = [
+  'Bronze. Immer noch besser als alles im Umkreis von 40 Kilometern.',
+  'Solide, zuverl\u00e4ssig, wird trotzdem als Erstes leer gegessen.',
+  'Der Kuchen, den alle m\u00f6gen und niemand nennt.'
+];
+const APPLAUSE_NOTES = [
+  'Der Nachbar hat geklopft.',
+  'Zwei Gl\u00e4ser sind gesprungen.',
+  'Ein Gast steht auf dem Stuhl.',
+  'Die Feuerwehr wurde vorsorglich informiert.',
+  'Messbar vom Nachbargrundst\u00fcck aus.'
+];
+const TICKER_NEWS = [
+  '<b>EILMELDUNG</b> Jury-Mitglied gibt zu: &bdquo;Ich habe zweimal probiert.&ldquo;',
+  '<b>SKANDAL</b> Kuchen soll Verwandtschaft zur Jury haben \u2013 Ermittlungen laufen',
+  '<b>LIVE</b> Buttervorr\u00e4te im Bezirk erreichen kritischen Stand',
+  '<b>EXKLUSIV</b> Verlierer k\u00fcndigt Comeback f\u00fcr n\u00e4chstes Wochenende an',
+  '<b>WETTER</b> Heute 28 Grad \u2013 Buttercreme unter versch\u00e4rfter Beobachtung',
+  '<b>SPORT</b> Gabel bricht bei Rekordversuch \u2013 Ersatzgabel im Einsatz',
+  '<b>B\u00d6RSE</b> Marzipan-Aktie steigt um 340 Prozent',
+  '<b>KULTUR</b> Kritiker nennt Ergebnis &bdquo;mutig, aber nachvollziehbar&ldquo;',
+  '<b>PANORAMA</b> Nachbarin fragt zum dritten Mal, ob noch was \u00fcbrig ist',
+  '<b>POLITIK</b> Opposition fordert Neuverkostung unter Aufsicht',
+  '<b>VERKEHR</b> A1 gesperrt \u2013 Buttercremetorte auf der \u00dcberholspur',
+  '<b>WISSENSCHAFT</b> Studie best\u00e4tigt: Zweites St\u00fcck z\u00e4hlt nicht',
+  '<b>LOKALES</b> Oma meldet Einspruch an \u2013 ihr Rezept sei nicht ber\u00fccksichtigt worden',
+  '<b>GESUNDHEIT</b> \u00c4rzte raten zu Bewegung \u2013 werden ignoriert',
+  '<b>TECHNIK</b> Waage im Badezimmer verweigert seit Dienstag den Dienst',
+  '<b>JUSTIZ</b> Anwalt pr\u00fcft Rechtsmittel gegen Platz vier',
+  '<b>REISE</b> Transportstrecke zur Location gilt weiterhin als Risikogebiet',
+  '<b>WIRTSCHAFT</b> Lokaler Eierpreis erreicht historischen H\u00f6chststand',
+  '<b>GESELLSCHAFT</b> Onkel Werner besteht darauf, den Kuchen selbst zu fahren',
+  '<b>UMFRAGE</b> 94 Prozent w\u00fcrden sofort nochmal probieren',
+  '<b>BRENNPUNKT</b> Wo war die Sahne zwischen 14 und 16 Uhr?',
+  '<b>NACHRUF</b> Wir gedenken der Probierst\u00fccke, die es nicht bis zur Bewertung schafften',
+  '<b>TIERWELT</b> Hund weiterhin fl\u00fcchtig \u2013 Zeugen gesucht',
+  '<b>MEINUNG</b> Kommentar: Warum &bdquo;zu s\u00fc\u00df&ldquo; kein Argument ist',
+  '<b>WERBUNG</b> Diese Sendung wurde erm\u00f6glicht durch: noch mehr Butter'
+];
+function shuffle(a){ const b=a.slice(); for(let i=b.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=b[i]; b[i]=b[j]; b[j]=t; } return b; }
+
+// ---------- Konfetti ----------
+const canvas = document.getElementById('confetti');
+const ctx = canvas.getContext('2d');
+let pieces = [], running = false;
+function sizeCanvas(){ canvas.width = innerWidth; canvas.height = innerHeight; }
+sizeCanvas(); addEventListener('resize', sizeCanvas);
+function burst(count, fromSides){
+  if (reduceMotion) return;
+  const colors = ['#E3B23C','#F2D98A','#E29AA6','#F7F1E6','#C08B5C','#fff'];
+  for (let i=0;i<count;i++){
+    const side = fromSides ? (i%2 ? 1 : -1) : 0;
+    pieces.push({
+      x: fromSides ? (side<0 ? -20 : canvas.width+20) : canvas.width/2 + (Math.random()-.5)*300,
+      y: fromSides ? canvas.height*.75 : canvas.height*.34 + (Math.random()-.5)*100,
+      vx: fromSides ? side*-1*(9+Math.random()*9) : (Math.random()-.5)*13,
+      vy: fromSides ? -(9+Math.random()*9) : Math.random()*-15-3,
+      w: 5+Math.random()*8, h: 8+Math.random()*10,
+      rot: Math.random()*Math.PI, vr: (Math.random()-.5)*.35,
+      color: colors[Math.floor(Math.random()*colors.length)]
+    });
+  }
+  if(!running){ running = true; requestAnimationFrame(tick); }
+}
+function tick(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  pieces = pieces.filter(function(p){ return p.y < canvas.height+70 && p.x > -120 && p.x < canvas.width+120; });
+  pieces.forEach(function(p){
+    p.vy += .33; p.x += p.vx; p.y += p.vy; p.vx *= .994; p.rot += p.vr;
+    ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
+    ctx.fillStyle = p.color; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h); ctx.restore();
+  });
+  if (pieces.length) requestAnimationFrame(tick);
+  else { running = false; ctx.clearRect(0,0,canvas.width,canvas.height); }
+}
+
+// ---------- Elemente ----------
+const overlay=document.getElementById('overlay'), countNum=document.getElementById('countNum'),
+      countWord=document.getElementById('countWord'), notar=document.getElementById('notar'),
+      notarStep=document.getElementById('notarStep'), notarBar=document.getElementById('notarBar'),
+      announcer=document.getElementById('announcer'), podium=document.getElementById('podium'),
+      awardsWrap=document.getElementById('awardsWrap'), statsWrap=document.getElementById('statsWrap'),
+      revealBtn=document.getElementById('revealBtn'), spot=document.getElementById('spot'),
+      applause=document.getElementById('applause'), appFill=document.getElementById('appFill'),
+      appVal=document.getElementById('appVal'), appNote=document.getElementById('appNote'),
+      ticker=document.getElementById('ticker'), tickerTrack=document.getElementById('tickerTrack');
+
+async function say(t, hold){ announcer.innerHTML = t; await sleep(hold||1400); }
+function shake(){ if(reduceMotion) return; document.body.classList.remove('shake'); void document.body.offsetWidth; document.body.classList.add('shake'); }
+
+async function loadCakes(){
+  if (APPS_SCRIPT_URL.indexOf('PASTE_YOUR') !== -1){
+    document.getElementById('msg').innerHTML =
+      '<div class="msg"><b>Die B\u00fchne steht. Das Publikum wartet. Es fehlen nur: Kuchen.</b>' +
+      'Trage oben im &lt;script&gt;-Tag dieselbe Apps-Script-URL ein wie auf der Hauptseite.</div>';
+    revealBtn.disabled = true; return false;
+  }
+  try {
+    const res = await fetch(APPS_SCRIPT_URL);
+    const data = await res.json();
+    cakes = Array.isArray(data) ? data.filter(function(c){ return c && c.name; }) : [];
+    return true;
+  } catch(e){
+    document.getElementById('msg').innerHTML =
+      '<div class="msg"><b>Der Vorhang klemmt.</b>Die Kuchendaten kamen nicht an. ' +
+      'Pr\u00fcfe die Apps-Script-URL &ndash; oder ob Google gerade auch Feiertag hat.</div>';
+    revealBtn.disabled = true; return false;
+  }
+}
+
+// ---------- Sequenzen ----------
+async function countdown(){
+  overlay.classList.add('on'); notar.style.display='none'; countNum.style.display='';
+  countWord.textContent = pick(JURY_LINES);
+  const steps = ['3','2','1','JETZT'];
+  for (let i=0;i<steps.length;i++){
+    countNum.textContent = steps[i];
+    countNum.classList.remove('pop'); void countNum.offsetWidth; countNum.classList.add('pop');
+    await sleep(i===3 ? 700 : 820);
+  }
+  overlay.classList.remove('on');
+}
+
+async function beglaubigung(){
+  overlay.classList.add('on');
+  countNum.style.display = 'none';
+  countWord.innerHTML = '&#128220; Offizielle Auswertung';
+  notar.style.display = 'block';
+
+  // Feste Dramaturgie, aber jedes Mal zwei neue Zwischenf\u00e4lle
+  const steps = NOTAR_FIX.slice();
+  const extras = shuffle(NOTAR_EXTRA).slice(0, 2);
+  extras.forEach(function(ex, n){
+    const pos = 2 + Math.floor(Math.random() * (steps.length - 3)) + n;
+    steps.splice(Math.min(pos, steps.length - 1), 0, ex);
+  });
+
+  for (let i=0;i<steps.length;i++){
+    notarStep.innerHTML = steps[i].t;
+    notarBar.style.width = Math.round((i+1)/steps.length*100) + '%';
+    await sleep(steps[i].ms);
+  }
+  await sleep(700);
+  overlay.classList.remove('on');
+  countNum.style.display = ''; notar.style.display='none'; notarBar.style.width='0';
+}
+
+async function alarmScreen(big, small){
+  overlay.classList.add('on','alarm');
+  notar.style.display='none'; countNum.style.display='';
+  countNum.textContent = big;
+  countNum.classList.remove('pop'); void countNum.offsetWidth; countNum.classList.add('pop');
+  countWord.innerHTML = small;
+  shake();
+  await sleep(2100);
+  overlay.classList.remove('on','alarm');
+}
+
+async function applauseMeter(cake){
+  applause.classList.add('on');
+  const score = overall(cake);
+  const target = Math.min(100, 42 + score/SCALE_MAX*66);
+  appFill.style.width = '0%'; appVal.textContent = '0 dB'; appNote.textContent = '';
+  await sleep(140);
+  appFill.style.width = target + '%';
+  const db = Math.round(72 + score/SCALE_MAX*54);
+  let cur = 0;
+  const iv = setInterval(function(){
+    cur += Math.max(1, Math.round((db-cur)/6));
+    if (cur >= db){ cur = db; clearInterval(iv); }
+    appVal.textContent = cur + ' dB';
+  }, 45);
+  await sleep(900);
+  appNote.textContent = pick(APPLAUSE_NOTES);
+}
+
+function champCard(cake, rank, fake){
+  const cls = fake ? 'fake gold' : (rank===1 ? 'gold' : (rank===2 ? 'silver' : 'bronze'));
+  const quip = fake ? 'Moment. Etwas stimmt hier nicht \u2026'
+    : (rank===1 ? pick(QUIPS_1) : (rank===2 ? pick(QUIPS_2) : pick(QUIPS_3)));
+  const tags = tagsOf(cake).slice(0,5);
+  return '<div class="champ '+cls+'">'+
+    '<div class="rank">'+(fake?'?':rank)+'<small>'+(fake?'angeblich':'Platz')+'</small></div>'+
+    '<div><p class="champ-name">'+esc(cake.name)+'</p>'+
+      (cake.flavor ? '<div class="champ-flavor">'+esc(cake.flavor)+'</div>' : '')+
+      '<div class="champ-quip">'+quip+'</div>'+
+      (tags.length ? '<div class="champ-tags">'+tags.map(function(t){return '<span>#'+esc(t)+'</span>';}).join('')+'</div>' : '')+
+    '</div>'+
+    '<div class="score-box"><div class="score-num">'+overall(cake).toFixed(1)+'</div>'+
+    '<div class="score-lbl">von '+SCALE_MAX+'</div></div></div>';
+}
+
+function addCard(cake, rank, fake){
+  const d = document.createElement('div');
+  d.innerHTML = champCard(cake, rank, fake);
+  const card = d.firstChild;
+  podium.appendChild(card);
+  requestAnimationFrame(function(){ card.classList.add('show'); });
+  return card;
+}
+
+function best(key, invert){
+  const pool = cakes.filter(function(c){ return c[key] !== '' && c[key] != null; });
+  if (!pool.length) return null;
+  return pool.slice().sort(function(a,b){ return invert ? num(a[key])-num(b[key]) : num(b[key])-num(a[key]); })[0];
+}
+
+function buildAwards(){
+  const defs = [
+    {e:'\uD83D\uDD25', t:'Der Feuerfeste', k:'heat', n:'H\u00e4lt stand, wenn die Sonne es pers\u00f6nlich nimmt.'},
+    {e:'\uD83D\uDE9A', t:'Goldene Sto\u00dfd\u00e4mpfer', k:'transport', n:'\u00dcberlebt Schlagl\u00f6cher, Kreisverkehre und Onkel Werners Fahrstil.'},
+    {e:'\uD83E\uDEB6', t:'Federgewicht', k:'heaviness', inv:true, n:'Nach drei G\u00e4ngen noch essbar. Das ist keine Kleinigkeit, das ist Kunst.'},
+    {e:'\uD83D\uDC85', t:'Sch\u00f6nheitsk\u00f6nigin', k:'appearance', n:'Wird mehr fotografiert als das Brautpaar. Wir haben nachgez\u00e4hlt.'},
+    {e:'\uD83C\uDFAF', t:'Publikumsliebling', k:'crowdPleaser', n:'Sogar die schwierige Tante nimmt ein zweites St\u00fcck.'},
+    {e:'\uD83D\uDE05', t:'Gn\u00e4dig zum B\u00e4cker', k:'doability', n:'Kein n\u00e4chtlicher Nervenzusammenbruch erforderlich.'},
+    {e:'\u23F0', t:'Der Vorausschauende', k:'makeAhead', n:'L\u00e4sst sich backen, bevor das Chaos beginnt.'},
+    {e:'\uD83E\uDD44', t:'Beste Gabel', k:'texture', n:'Krume wie ein Versprechen.'}
+  ];
+  let html='', i=0;
+  defs.forEach(function(d){
+    const w = best(d.k, d.inv); if(!w) return;
+    html += '<div class="award" style="animation-delay:'+(i*70)+'ms"><div class="emoji">'+d.e+'</div>'+
+      '<div class="a-title">'+d.t+'</div><div class="a-winner">'+esc(w.name)+'</div>'+
+      '<div class="a-note">'+d.n+'</div></div>'; i++;
+  });
+  const nopes = cakes.filter(function(c){ return c.status==='Nope'; });
+  if (nopes.length){
+    const hb = nopes.slice().sort(function(a,b){ return num(b.taste)-num(a.taste); })[0];
+    html += '<div class="award" style="animation-delay:'+(i*70)+'ms"><div class="emoji">\uD83D\uDC94</div>'+
+      '<div class="a-title">Der Herzensbrecher</div><div class="a-winner">'+esc(hb.name)+'</div>'+
+      '<div class="a-note">Hat geschmeckt. Hat es trotzdem nicht geschafft. Wir denken jeden Tag an ihn.</div></div>'; i++;
+  }
+  const untried = cakes.filter(function(c){ return c.status==='Noch nicht probiert'; });
+  if (untried.length){
+    html += '<div class="award" style="animation-delay:'+(i*70)+'ms"><div class="emoji">\uD83D\uDC40</div>'+
+      '<div class="a-title">Die gro\u00dfe Unbekannte</div><div class="a-winner">'+esc(pick(untried).name)+'</div>'+
+      '<div class="a-note">Wartet noch auf seinen Auftritt. K\u00f6nnte alles \u00e4ndern. Oder gar nichts.</div></div>'; i++;
+  }
+  if(!html) return '';
+  return '<div class="awards-head">Die Nebenkategorien</div>'+
+    '<div class="awards-sub">Weil Gr\u00f6\u00dfe sich nicht allein an der Gesamtpunktzahl misst.</div>'+
+    '<div id="awards">'+html+'</div>';
+}
+
+function buildStats(){
+  const n = cakes.length;
+  const gabeln = n*4 + Math.floor(Math.random()*9);
+  const butter = (n*0.32).toFixed(1);
+  const avg = n ? (cakes.reduce(function(a,c){ return a+overall(c); },0)/n).toFixed(1) : '0.0';
+  const nope = cakes.filter(function(c){ return c.status==='Nope'; }).length;
+  const items = [
+    {v:n, l:'Kandidaten im Rennen'},
+    {v:gabeln, l:'Gabeln im Einsatz'},
+    {v:butter+' kg', l:'Butter, gesch\u00e4tzt'},
+    {v:avg, l:'Durchschnitt aller Kuchen'},
+    {v:nope, l:'gebrochene Tr\u00e4ume'},
+    {v:'0', l:'Reue'}
+  ];
+  return '<div class="stats-head">Die Zahlen des Abends</div><div id="stats">'+
+    items.map(function(s){ return '<div class="stat"><div class="s-num">'+esc(s.v)+'</div><div class="s-lbl">'+s.l+'</div></div>'; }).join('')+
+    '</div><div style="text-align:center;"><button class="btn-small" id="againBtn">Nochmal enth\u00fcllen</button></div>';
+}
+
+function startTicker(){
+  // Jedes Mal andere Meldungen in anderer Reihenfolge
+  const news = shuffle(TICKER_NEWS).slice(0, 14);
+  tickerTrack.innerHTML = news.map(function(t){ return '<span>'+t+'</span>'; }).join('');
+  ticker.classList.add('on');
+  // Lesegeschwindigkeit: rund 55 Pixel pro Sekunde
+  requestAnimationFrame(function(){
+    const w = tickerTrack.scrollWidth || 3000;
+    tickerTrack.style.animationDuration = Math.round(w / 55) + 's';
+  });
+}
+
+// ---------- Hauptablauf ----------
+async function runReveal(){
+  revealBtn.disabled = true;
+  podium.innerHTML=''; awardsWrap.innerHTML=''; statsWrap.innerHTML='';
+  document.getElementById('msg').innerHTML=''; applause.classList.remove('on');
+
+  const ranked = cakes.slice().sort(function(a,b){ return overall(b)-overall(a); });
+
+  if (!ranked.length){
+    document.getElementById('msg').innerHTML =
+      '<div class="msg"><b>Ein leeres Podium ist auch eine Aussage.</b>'+
+      'Es wurde noch kein einziger Kuchen eingetragen. Das ist entweder bewundernswerte Disziplin oder ein Notfall.</div>';
+    revealBtn.disabled=false; return;
+  }
+
+  spot.classList.add('on');
+  startTicker();
+
+  await countdown();
+  await say('Meine sehr verehrten Damen und Herren \u2026', 1500);
+  await say('\u2026 willkommen zur einzigen Kuchen-Gala mit notariell begleiteter Auswertung.', 2100);
+  await beglaubigung();
+  await say('\u2026 nach '+cakes.length+' Kandidaten und einer nicht n\u00e4her bezifferten Menge Butter \u2026', 2000);
+
+  if (ranked[2]){
+    await say('Auf dem dritten Platz \u2026', 1500);
+    addCard(ranked[2], 3); burst(40); await sleep(1200);
+  }
+  if (ranked[1]){
+    await say('Auf dem zweiten Platz \u2026', 1500);
+    addCard(ranked[1], 2); burst(60); await sleep(1300);
+  }
+
+  await say('Und der amtierende Champion \u2026', 1700);
+  await say('\u2026 der Kuchen, der alles ver\u00e4ndert \u2026', 1700);
+
+  // ---- Der Umschlag-Skandal ----
+  const doFake = ranked.length >= 3 && Math.random() < 0.75;
+  if (doFake){
+    const wrong = ranked[ranked.length-1];
+    const fakeCard = addCard(wrong, 1, true);
+    await say('&#127942; ' + esc(wrong.name) + '!', 1900);
+    await say('&hellip;', 1300);
+    shake();
+    await say('Moment.', 1200);
+    await alarmScreen('MOMENT.', 'Es gab ein Problem mit dem Umschlag.');
+    await say('Wir haben den falschen Umschlag ge\u00f6ffnet. Das tut uns aufrichtig leid.', 2200);
+    fakeCard.classList.add('retracted');
+    await sleep(900);
+    if (fakeCard.parentNode) fakeCard.parentNode.removeChild(fakeCard);
+    await say('Der <em>echte</em> Champion \u2026', 1800);
+  }
+
+  const winner = addCard(ranked[0], 1);
+  winner.classList.add('crowned');
+  burst(200); setTimeout(function(){ burst(120, true); }, 350);
+  await applauseMeter(ranked[0]);
+  await sleep(900);
+
+  await say('\uD83C\uDF82 Der Titel ist vergeben. Bis zum n\u00e4chsten Backblech.', 1500);
+
+  awardsWrap.innerHTML = buildAwards();
+  statsWrap.innerHTML = buildStats();
+  const again = document.getElementById('againBtn');
+  if (again) again.addEventListener('click', function(){
+    scrollTo({top:0, behavior:'smooth'});
+    setTimeout(runReveal, 550);
+  });
+
+  revealBtn.disabled = false;
+  revealBtn.textContent = 'Nochmal, mit Gef\u00fchl';
+}
+
+revealBtn.addEventListener('click', runReveal);
+
+(async function init(){
+  const ok = await loadCakes();
+  if (ok && !cakes.length){
+    document.getElementById('msg').innerHTML =
+      '<div class="msg"><b>Noch keine Kandidaten.</b>Die B\u00fchne ist bereit, das Buffet ist leer. '+
+      'Trag auf der Hauptseite ein paar Kuchen ein, dann wird hier gefeiert.</div>';
+  }
+})();
+</script>
+</body>
+</html>

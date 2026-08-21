@@ -348,7 +348,7 @@ function clearErrorBanner() { errorBanner.innerHTML = ''; }
 async function loadCakes() {
   if (APPS_SCRIPT_URL.includes('PASTE_YOUR')) {
     listArea.innerHTML = '';
-    showError('This page isn\\'t connected to a Google Sheet yet. Paste your Apps Script Web App URL into APPS_SCRIPT_URL near the top of the &lt;script&gt; tag.');
+    showError("This page isn't connected to a Google Sheet yet. Paste your Apps Script Web App URL into APPS_SCRIPT_URL near the top of the &lt;script&gt; tag.");
     return;
   }
   try {

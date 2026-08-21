@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cake Trials</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root {
+    --bg: #EAF0E6;
+    --bg-card: #FBFBF7;
+    --ink: #2B2420;
+    --ink-soft: #6B6055;
+    --plum: #4B2138;
+    --gold: #B8891F;
+    --line: #D8DBCE;
+    --radius: 14px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    padding: 32px 18px 80px;
+  }
+
+  .wrap { max-width: 800px; margin: 0 auto; }
+
+  header.page { text-align: center; margin-bottom: 22px; }
+  .eyebrow {
+    font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--plum); font-weight: 600; margin-bottom: 8px;
+  }
+  h1 {
+    font-family: 'Fraunces', serif; font-weight: 600; font-size: 42px;
+    margin: 0 0 10px; color: var(--plum); letter-spacing: -0.01em;
+  }
+  .sub { color: var(--ink-soft); font-size: 15px; max-width: 520px; margin: 0 auto; line-height: 1.5; }
+
+  .notice {
+    font-size: 12.5px; color: var(--ink-soft); background: rgba(75,33,56,0.06);
+    border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px;
+    margin: 18px auto 0; max-width: 520px; text-align: center;
+  }
+
+  .legend { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin: 18px 0 0; font-size: 10.5px; color: var(--ink-soft); }
+  .legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .legend i { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+
+  .toolbar { display: flex; gap: 10px; justify-content: center; margin: 26px 0 30px; flex-wrap: wrap; }
+  button { font-family: 'Inter', sans-serif; cursor: pointer; border: none; }
+  .btn-primary {
+    background: var(--plum); color: #fff; padding: 12px 22px; border-radius: 999px;
+    font-size: 14px; font-weight: 600; letter-spacing: 0.01em;
+    transition: transform 0.15s ease, background 0.15s ease;
+  }
+  .btn-primary:hover { background: #3a1929; transform: translateY(-1px); }
+  .btn-primary:disabled { opacity: 0.6; cursor: default; transform: none; }
+  .btn-ghost {
+    background: transparent; color: var(--plum); padding: 12px 18px; border-radius: 999px;
+    font-size: 14px; font-weight: 600; border: 1.5px solid var(--plum);
+  }
+  .btn-ghost:hover { background: rgba(75,33,56,0.06); }
+  .sort-select, .status-filter {
+    font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; color: var(--plum);
+    background: var(--bg-card); border: 1.5px solid var(--line); border-radius: 999px; padding: 10px 16px;
+  }
+
+  .form-card {
+    background: var(--bg-card); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 26px; margin-bottom: 34px; display: none;
+  }
+  .form-card.open { display: block; }
+  .form-card h2 { font-family: 'Fraunces', serif; font-size: 22px; margin: 0 0 18px; color: var(--plum); }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
+  @media (max-width: 480px) { .two-col { grid-template-columns: 1fr; } }
+
+  .field { margin-bottom: 16px; }
+  .field label {
+    display: block; font-size: 12.5px; font-weight: 600; color: var(--ink-soft);
+    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px;
+  }
+  .field input[type=text], .field input[type=date], .field textarea, .field select {
+    width: 100%; font-family: 'Inter', sans-serif; font-size: 15px; padding: 10px 12px;
+    border: 1.5px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink);
+  }
+  .field textarea { resize: vertical; min-height: 54px; }
+  .field input:focus, .field textarea:focus, .field select:focus { outline: 2px solid var(--gold); outline-offset: 1px; }
+
+  .section-label {
+    font-family: 'Fraunces', serif; font-style: italic; font-size: 15px; color: var(--plum);
+    margin: 18px 0 10px; border-top: 1px solid var(--line); padding-top: 16px;
+  }
+  .form-card > .section-label:first-of-type { border-top: none; padding-top: 0; }
+
+  .sliders-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 20px; margin-bottom: 6px; }
+  @media (max-width: 480px) { .sliders-grid { grid-template-columns: 1fr; } }
+  .slider-field label { display: flex; justify-content: space-between; align-items: baseline; }
+  .slider-field .val { font-family: 'Fraunces', serif; font-size: 16px; color: var(--plum); font-weight: 600; }
+  .slider-field input[type=range] { width: 100%; accent-color: var(--plum); }
+  .slider-hint { font-size: 11px; color: var(--ink-soft); display: flex; justify-content: space-between; margin-top: 2px; }
+
+  .form-actions { display: flex; gap: 10px; margin-top: 6px; }
+
+  .empty { text-align: center; padding: 50px 20px; color: var(--ink-soft); font-size: 14px; }
+  .empty .big { font-family: 'Fraunces', serif; font-style: italic; font-size: 20px; color: var(--plum); display: block; margin-bottom: 8px; }
+
+  .cake-card {
+    background: var(--bg-card); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 22px 24px; margin-bottom: 16px; display: grid; grid-template-columns: 90px 1fr; gap: 20px; align-items: start;
+  }
+  @media (max-width: 480px) { .cake-card { grid-template-columns: 70px 1fr; gap: 14px; padding: 18px; } }
+
+  .cake-svg-wrap { display: flex; flex-direction: column; align-items: center; }
+  .cake-svg-wrap .score { font-family: 'Fraunces', serif; font-weight: 600; font-size: 20px; color: var(--plum); margin-top: 4px; }
+  .cake-svg-wrap .score-label { font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-soft); }
+
+  .cake-body { min-width: 0; }
+  .cake-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap; }
+  .cake-name { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 600; color: var(--ink); margin: 0; line-height: 1.2; }
+  .cake-flavor { font-size: 12.5px; color: var(--ink-soft); margin-top: 2px; }
+
+  .status-pill {
+    font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 999px; white-space: nowrap;
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .status-contender { background: #E4EEDF; color: #4A6B41; }
+  .status-nope { background: #F3DEDE; color: #8A3A3A; }
+  .status-untried { background: #EAE6DC; color: #7A6F5F; }
+
+  .del-btn { background: none; color: var(--ink-soft); font-size: 12px; padding: 4px 8px; border-radius: 6px; flex-shrink: 0; }
+  .del-btn:hover { color: #a83232; background: rgba(168,50,50,0.08); }
+
+  .meta-line { font-size: 11.5px; color: var(--ink-soft); margin-top: 6px; display: flex; gap: 12px; flex-wrap: wrap; }
+
+  .stat-rows { margin-top: 14px; display: flex; flex-direction: column; gap: 7px; }
+  .stat-row { display: grid; grid-template-columns: 130px 1fr 22px; gap: 10px; align-items: center; }
+  .stat-row .label { font-size: 12px; color: var(--ink-soft); font-weight: 500; }
+  .stat-row .bar-track { height: 6px; background: var(--line); border-radius: 4px; overflow: hidden; }
+  .stat-row .bar-fill { height: 100%; border-radius: 4px; }
+  .stat-row .num { font-size: 12px; color: var(--ink-soft); text-align: right; }
+
+  .tags { margin-top: 12px; display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag { font-size: 10.5px; background: rgba(75,33,56,0.07); color: var(--plum); padding: 3px 9px; border-radius: 999px; font-weight: 600; }
+
+  .cake-notes {
+    margin-top: 12px; font-size: 13.5px; color: var(--ink); line-height: 1.5; font-style: italic;
+    border-left: 2px solid var(--line); padding-left: 12px;
+  }
+
+  .loading { text-align: center; color: var(--ink-soft); font-size: 13px; padding: 30px; }
+  .error-banner {
+    background: #F3DEDE; color: #8A3A3A; border-radius: 10px; padding: 12px 16px;
+    font-size: 13px; text-align: center; margin-bottom: 20px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="page">
+    <div class="eyebrow">A running record</div>
+    <h1>Cake Trials</h1>
+    <p class="sub">Every cake we've tried, scored on taste, doability, how it holds up in heat, and how it survives the drive &mdash; plus everything we'd need to actually book one.</p>
+    <div class="notice">This page is shared &mdash; anyone with this link can see and add cakes. Data lives in a Google Sheet, not on this page.</div>
+  </header>
+
+  <div class="legend" id="legend"></div>
+
+  <div id="errorBanner"></div>
+
+  <div class="toolbar">
+    <button class="btn-primary" id="toggleFormBtn">Add a cake</button>
+    <select class="sort-select" id="sortSelect">
+      <option value="overall">Sort: highest overall</option>
+      <option value="taste">Sort: taste</option>
+      <option value="doability">Sort: doability</option>
+      <option value="heat">Sort: heat stability</option>
+      <option value="transport">Sort: transport</option>
+      <option value="appearance">Sort: appearance</option>
+      <option value="texture">Sort: texture</option>
+      <option value="sweetness">Sort: sweetness balance</option>
+      <option value="recent">Sort: most recent</option>
+    </select>
+    <select class="status-filter" id="statusFilter">
+      <option value="all">All statuses</option>
+      <option value="Contender">Contender</option>
+      <option value="Nope">Nope</option>
+      <option value="Noch nicht probiert">Noch nicht probiert</option>
+    </select>
+  </div>
+
+  <div class="form-card" id="formCard">
+    <h2>New tasting</h2>
+
+    <div class="two-col">
+      <div class="field">
+        <label for="fName">Cake name</label>
+        <input type="text" id="fName" placeholder="e.g. Brown butter vanilla, almond praline tier" />
+      </div>
+      <div class="field">
+        <label for="fFlavor">Flavor / filling</label>
+        <input type="text" id="fFlavor" placeholder="e.g. Lemon curd &amp; raspberry" />
+      </div>
+      <div class="field">
+        <label for="fBaker">Baker / recipe source</label>
+        <input type="text" id="fBaker" placeholder="e.g. Café Sacher, or Grandma's recipe" />
+      </div>
+      <div class="field">
+        <label for="fDietary">Dietary tags</label>
+        <input type="text" id="fDietary" placeholder="e.g. gluten-free, nut-free" />
+      </div>
+      <div class="field">
+        <label for="fStorage">Refrigeration / storage needs</label>
+        <input type="text" id="fStorage" placeholder="e.g. keep chilled until 1hr before serving" />
+      </div>
+      <div class="field">
+        <label for="fStatus">Status</label>
+        <select id="fStatus">
+          <option value="Noch nicht probiert">Noch nicht probiert</option>
+          <option value="Contender">Contender</option>
+          <option value="Nope">Nope</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="fTastedBy">Tasted by</label>
+        <input type="text" id="fTastedBy" placeholder="e.g. both of us, Mom" />
+      </div>
+      <div class="field">
+        <label for="fDate">Date tasted</label>
+        <input type="date" id="fDate" />
+      </div>
+    </div>
+
+    <div class="section-label">Ratings</div>
+    <div class="sliders-grid">
+      <div class="slider-field"><label for="sTaste">Taste <span class="val" id="vTaste">3</span></label>
+        <input type="range" min="1" max="5" value="3" id="sTaste" />
+        <div class="slider-hint"><span>Forgettable</span><span>Unreal</span></div></div>
+      <div class="slider-field"><label for="sDoability">Doability <span class="val" id="vDoability">3</span></label>
+        <input type="range" min="1" max="5" value="3" id="sDoability" />
+        <div class="slider-hint"><span>Nightmare</span><span>Easy</span></div></div>
+      <div class="slider-field"><label for="sHeat">Heat stability <span class="val" id="vHeat">3</span></label>
+        <input type="range" min="1" max="5" value="3" id="sHeat" />
+        <div class="slider-hint"><span>Melts fast</span><span>Rock solid</span></div></div>
+      <div class="slider-field"><label for="sTransport">Transport <span class="val" id="vTransport">3</span></label>
+        <input type="range" min="1" max="5" value="3" id="sTransport" />
+        <div class="slider-hint"><span>Fragile</span><span>Bombproof</span></div></div>
+      <div class="slider-field"><label for="sAppearance">Appearance <span class="val" id="vAppearance">3</span></label>
+        <input type="range" min="1" max="5" value="3" id="sAppearance" />
+        <div class="slider-hint"><span>Plain</span><span>Showstopper</span></div></div>
+      <div class="slider-field"><label for="sTexture">Texture <span class="val" id="vTexture">3</span></label>
+        <input type="range" min="1" max="5" value="3" id="sTexture" />
+        <div class="slider-hint"><span>Off</span><span>Perfect crumb</span></div></div>
+      <div class="slider-field"><label for="sSweetness">Sweetness balance <span class="val" id="vSweetness">3</span></label>
+        <input type="range" min="1" max="5" value="3" id="sSweetness" />
+        <div class="slider-hint"><span>Off-balance</span><span>Just right</span></div></div>
+    </div>
+
+    <div class="field" style="margin-top: 10px;">
+      <label for="fNotes">Notes</label>
+      <textarea id="fNotes" placeholder="Anything worth remembering..."></textarea>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn-primary" id="saveBtn">Save cake</button>
+      <button class="btn-ghost" id="cancelBtn">Cancel</button>
+    </div>
+  </div>
+
+  <div id="listArea"><div class="loading">Loading cakes&hellip;</div></div>
+
+</div>
+
+<script>
+// ======= CONFIGURE THIS =======
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbywBvQJrxYYN8ukdUPKcuR1VB_3-nWFWdTyFwfyQPD_SKXI1nkPBUhPgwTjrKZzlpkd/exec';
+// ================================
+
+const RATING_CRITERIA = [
+  { key: 'taste', label: 'Taste', color: '#E29AA6' },
+  { key: 'doability', label: 'Doability', color: '#7E9A78' },
+  { key: 'heat', label: 'Heat stability', color: '#B8891F' },
+  { key: 'transport', label: 'Transport', color: '#7A4869' },
+  { key: 'appearance', label: 'Appearance', color: '#C77B4B' },
+  { key: 'texture', label: 'Texture', color: '#5E7F99' },
+  { key: 'sweetness', label: 'Sweetness balance', color: '#9C7A9E' },
+];
+// tier visual uses just 4 of the 7 for a readable stack
+const TIER_KEYS = ['heat', 'transport', 'doability', 'taste'];
+
+let cakes = [];
+let sortMode = 'overall';
+let statusFilterVal = 'all';
+
+const legendEl = document.getElementById('legend');
+legendEl.innerHTML = RATING_CRITERIA.map(c => `<span><i style="background:${c.color}"></i>${c.label}</span>`).join('');
+
+const formCard = document.getElementById('formCard');
+const toggleFormBtn = document.getElementById('toggleFormBtn');
+const cancelBtn = document.getElementById('cancelBtn');
+const saveBtn = document.getElementById('saveBtn');
+const listArea = document.getElementById('listArea');
+const sortSelect = document.getElementById('sortSelect');
+const statusFilter = document.getElementById('statusFilter');
+const errorBanner = document.getElementById('errorBanner');
+
+toggleFormBtn.addEventListener('click', () => {
+  formCard.classList.toggle('open');
+  if (formCard.classList.contains('open')) document.getElementById('fName').focus();
+});
+cancelBtn.addEventListener('click', () => { formCard.classList.remove('open'); clearForm(); });
+
+['sTaste','sDoability','sHeat','sTransport','sAppearance','sTexture','sSweetness'].forEach(id => {
+  const input = document.getElementById(id);
+  const out = document.getElementById('v' + id.slice(1));
+  input.addEventListener('input', () => { out.textContent = input.value; });
+});
+
+sortSelect.addEventListener('change', () => { sortMode = sortSelect.value; render(); });
+statusFilter.addEventListener('change', () => { statusFilterVal = statusFilter.value; render(); });
+
+function clearForm() {
+  ['fName','fFlavor','fBaker','fDietary','fStorage','fTastedBy','fDate','fNotes'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('fStatus').value = 'Noch nicht probiert';
+  ['sTaste','sDoability','sHeat','sTransport','sAppearance','sTexture','sSweetness'].forEach(id => {
+    document.getElementById(id).value = 3;
+    document.getElementById('v' + id.slice(1)).textContent = 3;
+  });
+}
+
+function overall(cake) {
+  const sum = RATING_CRITERIA.reduce((a, c) => a + Number(cake[c.key] || 0), 0);
+  return sum / RATING_CRITERIA.length;
+}
+
+function showError(msg) {
+  errorBanner.innerHTML = `<div class="error-banner">${msg}</div>`;
+}
+function clearErrorBanner() { errorBanner.innerHTML = ''; }
+
+async function loadCakes() {
+  if (APPS_SCRIPT_URL.includes('PASTE_YOUR')) {
+    listArea.innerHTML = '';
+    showError('This page isn\\'t connected to a Google Sheet yet. Paste your Apps Script Web App URL into APPS_SCRIPT_URL near the top of the &lt;script&gt; tag.');
+    return;
+  }
+  try {
+    const res = await fetch(APPS_SCRIPT_URL);
+    if (!res.ok) throw new Error('bad response');
+    cakes = await res.json();
+    clearErrorBanner();
+  } catch (e) {
+    showError('Could not load cakes from the sheet right now. Try refreshing the page.');
+    cakes = [];
+  }
+}
+
+async function addCake(cake) {
+  const res = await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify(cake) });
+  return res;
+}
+
+async function deleteCake(id) {
+  if (!confirm('Remove this cake from the ledger?')) return;
+  try {
+    await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', id }) });
+    await loadCakes();
+    render();
+  } catch (e) {
+    alert('Could not remove this cake. Please try again.');
+  }
+}
+
+saveBtn.addEventListener('click', async () => {
+  const name = document.getElementById('fName').value.trim();
+  if (!name) { document.getElementById('fName').focus(); return; }
+
+  const newCake = {
+    id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random()),
+    name,
+    flavor: document.getElementById('fFlavor').value.trim(),
+    baker: document.getElementById('fBaker').value.trim(),
+    dietary: document.getElementById('fDietary').value.trim(),
+    storage: document.getElementById('fStorage').value.trim(),
+    notes: document.getElementById('fNotes').value.trim(),
+    tastedBy: document.getElementById('fTastedBy').value.trim(),
+    dateTasted: document.getElementById('fDate').value,
+    status: document.getElementById('fStatus').value,
+    taste: Number(document.getElementById('sTaste').value),
+    doability: Number(document.getElementById('sDoability').value),
+    heat: Number(document.getElementById('sHeat').value),
+    transport: Number(document.getElementById('sTransport').value),
+    appearance: Number(document.getElementById('sAppearance').value),
+    texture: Number(document.getElementById('sTexture').value),
+    sweetness: Number(document.getElementById('sSweetness').value),
+    createdAt: Date.now(),
+  };
+
+  saveBtn.disabled = true; saveBtn.textContent = 'Saving...';
+  try {
+    await addCake(newCake);
+    await loadCakes();
+    clearForm();
+    formCard.classList.remove('open');
+    render();
+  } catch (e) {
+    alert('Could not save this cake. Please check your connection and try again.');
+  } finally {
+    saveBtn.disabled = false; saveBtn.textContent = 'Save cake';
+  }
+});
+
+function cakeSvg(cake) {
+  const colorMap = Object.fromEntries(RATING_CRITERIA.map(c => [c.key, c.color]));
+  const W = 80, maxTierH = 15, tierGap = 2, baseY = 92;
+  let y = baseY, rects = '';
+  TIER_KEYS.forEach((key, i) => {
+    const score = Number(cake[key] || 0);
+    const h = 6 + (score / 5) * maxTierH;
+    const inset = i * 4;
+    const w = W - inset * 2;
+    const x = (80 - w) / 2;
+    y -= h + tierGap;
+    rects += `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="3" fill="${colorMap[key]}" opacity="0.92"/>`;
+  });
+  rects += `<ellipse cx="40" cy="${baseY + 4}" rx="36" ry="5" fill="#D8DBCE"/>`;
+  return `<svg viewBox="0 0 80 100" width="72" height="90" xmlns="http://www.w3.org/2000/svg">${rects}</svg>`;
+}
+
+function statRow(label, score, color) {
+  const pct = (Number(score || 0) / 5) * 100;
+  return `<div class="stat-row">
+    <div class="label">${label}</div>
+    <div class="bar-track"><div class="bar-fill" style="width:${pct}%; background:${color}"></div></div>
+    <div class="num">${score || 0}</div>
+  </div>`;
+}
+
+function statusClass(status) {
+  if (status === 'Contender') return 'status-contender';
+  if (status === 'Nope') return 'status-nope';
+  return 'status-untried';
+}
+
+function escapeHtml(str) {
+  const d = document.createElement('div');
+  d.textContent = str || '';
+  return d.innerHTML;
+}
+
+function render() {
+  let filtered = statusFilterVal === 'all' ? cakes : cakes.filter(c => c.status === statusFilterVal);
+
+  if (!filtered.length) {
+    listArea.innerHTML = `<div class="empty"><span class="big">Nothing here yet.</span>Add a cake, or clear the status filter above.</div>`;
+    return;
+  }
+
+  let sorted = [...filtered];
+  if (sortMode === 'overall') sorted.sort((a,b) => overall(b) - overall(a));
+  else if (sortMode === 'recent') sorted.sort((a,b) => Number(b.createdAt||0) - Number(a.createdAt||0));
+  else sorted.sort((a,b) => Number(b[sortMode]||0) - Number(a[sortMode]||0));
+
+  const colorMap = Object.fromEntries(RATING_CRITERIA.map(c => [c.key, c.color]));
+
+  listArea.innerHTML = sorted.map(cake => {
+    const rows = RATING_CRITERIA.map(c => statRow(c.label, cake[c.key], colorMap[c.key])).join('');
+    const dietaryTags = (cake.dietary || '').split(',').map(t => t.trim()).filter(Boolean);
+    return `
+    <div class="cake-card">
+      <div class="cake-svg-wrap">
+        ${cakeSvg(cake)}
+        <div class="score">${overall(cake).toFixed(1)}</div>
+        <div class="score-label">overall</div>
+      </div>
+      <div class="cake-body">
+        <div class="cake-top">
+          <div>
+            <p class="cake-name">${escapeHtml(cake.name)}</p>
+            ${cake.flavor ? `<div class="cake-flavor">${escapeHtml(cake.flavor)}</div>` : ''}
+          </div>
+          <span class="status-pill ${statusClass(cake.status)}">${escapeHtml(cake.status || 'Noch nicht probiert')}</span>
+        </div>
+        <div class="meta-line">
+          ${cake.baker ? `<span>${escapeHtml(cake.baker)}</span>` : ''}
+          ${cake.tastedBy ? `<span>Tasted by ${escapeHtml(cake.tastedBy)}</span>` : ''}
+          ${cake.dateTasted ? `<span>${escapeHtml(cake.dateTasted)}</span>` : ''}
+        </div>
+        ${dietaryTags.length ? `<div class="tags">${dietaryTags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>` : ''}
+        <div class="stat-rows">${rows}</div>
+        ${cake.storage ? `<div class="meta-line" style="margin-top:10px;">❄ ${escapeHtml(cake.storage)}</div>` : ''}
+        ${cake.notes ? `<div class="cake-notes">${escapeHtml(cake.notes)}</div>` : ''}
+        <button class="del-btn" data-id="${escapeHtml(cake.id)}" style="margin-top:10px;">Remove</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  listArea.querySelectorAll('.del-btn').forEach(btn => {
+    btn.addEventListener('click', () => deleteCake(btn.dataset.id));
+  });
+}
+
+(async function init() {
+  await loadCakes();
+  render();
+})();
+</script>
+</body>
+</html>

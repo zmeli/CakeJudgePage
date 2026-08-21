@@ -397,7 +397,19 @@ async function loadCakes() {
 }
 
 async function postToSheet(payload) {
-  return fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+  // Apps Script antwortet auf POST mit einem Redirect, den der Browser
+  // aus CORS-Gruenden nicht lesen darf. no-cors laesst den Schreibvorgang
+  // trotzdem durchlaufen - wir koennen die Antwort nur nicht auslesen.
+  return fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload)
+  });
+}
+
+function showInfo(msg) {
+  errorBanner.innerHTML = '<div class="error-banner" style="background:#E4EEDF; color:#4A6B41;">' + msg + '</div>';
 }
 
 // ---------- form ----------
@@ -485,26 +497,37 @@ saveBtn.addEventListener('click', async () => {
   const data = collectFormData();
   if (!data.name) { document.getElementById('fName').focus(); return; }
 
+  const wasEditing = !!editingId;
   saveBtn.disabled = true;
   saveBtn.textContent = 'Wird gespeichert \u2026';
   try {
-    if (editingId) {
+    if (wasEditing) {
       data.id = editingId;
       data.action = 'update';
-      await postToSheet(data);
     } else {
       data.id = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random());
       data.createdAt = Date.now();
-      await postToSheet(data);
     }
+    await postToSheet(data);
+
+    // Google braucht kurz, bis die Zeile im Sheet steht.
+    showInfo('Gespeichert \u2013 Liste wird aktualisiert \u2026');
+    await new Promise(r => setTimeout(r, 1500));
+
     await loadCakes();
     clearForm();
     formCard.classList.remove('open');
     render();
+
+    const found = cakes.some(c => String(c.id) === String(data.id));
+    if (found) { showInfo(wasEditing ? '\u00c4nderungen gespeichert.' : 'Kuchen gespeichert.'); setTimeout(clearErrorBanner, 2500); }
+    else showError('Der Eintrag kam nicht im Sheet an. Pr\u00fcfe, ob die Bereitstellung auf &bdquo;Anyone&ldquo; steht und Zeile 1 des Sheets alle Spalten\u00fcberschriften enth\u00e4lt.');
   } catch (e) {
-    alert('Konnte nicht gespeichert werden. Bitte Verbindung pr\u00fcfen und erneut versuchen.');
+    showError('Konnte nicht gespeichert werden: ' + escapeHtml(e.message));
+    console.error('Speicherfehler:', e);
   } finally {
     saveBtn.disabled = false;
+    saveBtn.textContent = editingId ? '\u00c4nderungen speichern' : 'Speichern';
   }
 });
 
@@ -512,10 +535,11 @@ async function deleteCake(id) {
   if (!confirm('Diesen Kuchen wirklich aus der Liste entfernen?')) return;
   try {
     await postToSheet({ action: 'delete', id: id });
+    await new Promise(r => setTimeout(r, 1200));
     await loadCakes();
     render();
   } catch (e) {
-    alert('Konnte nicht entfernt werden. Bitte erneut versuchen.');
+    showError('Konnte nicht entfernt werden: ' + escapeHtml(e.message));
   }
 }
 
@@ -650,18 +674,24 @@ function render() {
         '</div>' +
       '</div></div>';
   }).join('');
-
-  listArea.querySelectorAll('.del-btn').forEach(btn =>
-    btn.addEventListener('click', () => deleteCake(btn.dataset.id)));
-  listArea.querySelectorAll('.edit-btn').forEach(btn =>
-    btn.addEventListener('click', () => {
-      const cake = cakes.filter(c => String(c.id) === String(btn.dataset.id))[0];
-      if (cake) fillForm(cake);
-    }));
-  listArea.querySelectorAll('.tag').forEach(btn => {
-    if (btn.dataset.tag) btn.addEventListener('click', () => addTagFilter(btn.dataset.tag));
-  });
 }
+
+// Ein einziger delegierter Handler - funktioniert auch fuer Karten,
+// die erst nach dem Laden neu gerendert werden.
+listArea.addEventListener('click', function (ev) {
+  const editBtn = ev.target.closest('.edit-btn');
+  if (editBtn) {
+    const cake = cakes.filter(c => String(c.id) === String(editBtn.dataset.id))[0];
+    if (cake) { fillForm(cake); }
+    else { showError('Dieser Eintrag hat keine ID im Sheet. Pr\u00fcfe, ob die Spalte &bdquo;id&ldquo; in Zeile 1 steht und gef\u00fcllt ist.'); }
+    return;
+  }
+  const delBtn = ev.target.closest('.del-btn');
+  if (delBtn) { deleteCake(delBtn.dataset.id); return; }
+
+  const tagBtn = ev.target.closest('.tag');
+  if (tagBtn && tagBtn.dataset.tag) { addTagFilter(tagBtn.dataset.tag); }
+});
 
 (async function init() {
   await loadCakes();

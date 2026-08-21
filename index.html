@@ -150,9 +150,12 @@
 <div class="wrap">
 
   <header class="page">
-    <div class="eyebrow">Unsere laufende Liste</div>
+    <div class="eyebrow">Kuchen essen, Kuchen bewerten, Kuchen vergessen, Kuchen nochmal essen. <br> Eine streng wissenschaftliche Langzeitstudie. </div>
     <h1>Cake Trials</h1>
-    <p class="sub">Jeder Kuchen, den wir probiert haben &ndash; bewertet nach Geschmack, Machbarkeit, Hitzebest&auml;ndigkeit, Transport und allem, was wir zum Buchen wissen m&uuml;ssen.</p>
+    <p class="sub">
+Jeder Kuchen, den wir im Dienste der Wissenschaft essen mussten – bewertet nach Geschmack, Machbarkeit, Hitzebeständigkeit, Transportfähigkeit und der Frage, ob wir danach noch tanzen können
+
+</p>
     <div class="notice">Diese Seite ist geteilt &ndash; alle mit dem Link k&ouml;nnen Kuchen sehen, hinzuf&uuml;gen und bearbeiten. Die Daten liegen in einem Google Sheet, nicht auf dieser Seite.</div>
   </header>
 
@@ -254,19 +257,23 @@ window.addEventListener('error', function (ev) {
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbywBvQJrxYYN8ukdUPKcuR1VB_3-nWFWdTyFwfyQPD_SKXI1nkPBUhPgwTjrKZzlpkd/exec';
 // ==============================
 
+const SCALE_MAX = 7;
+const SCALE_DEFAULT = 4;
+
 const RATING_CRITERIA = [
-  { key: 'taste',        label: 'Geschmack',            color: '#E29AA6', low: 'Vergessenswert', high: 'Unglaublich' },
-  { key: 'doability',    label: 'Machbarkeit',          color: '#7E9A78', low: 'Albtraum',       high: 'Einfach' },
+  { key: 'taste',        label: 'Geschmack',            color: '#E29AA6', low: 'Vergessenswert', high: 'Unglaublich',    genuss: true },
+  { key: 'sweetness',    label: 'S\u00fc\u00dfe-Balance', color: '#9C7A9E', low: 'Unausgewogen', high: 'Genau richtig', genuss: true },
+  { key: 'heaviness',    label: 'F\u00fcllig',          color: '#8FA88C', low: 'Federleicht',    high: 'Sehr f\u00fcllig', genuss: true, invertiert: true },
+  { key: 'texture',      label: 'Textur',               color: '#5E7F99', low: 'Daneben',        high: 'Perfekt',        genuss: true },
+  { key: 'appearance',   label: 'Optik',                color: '#C77B4B', low: 'Schlicht',       high: 'Hingucker',      genuss: true },
+  { key: 'crowdPleaser', label: 'Gef\u00e4llt allen',   color: '#D0968C', low: 'Speziell',       high: 'Alle lieben ihn', genuss: true },
   { key: 'heat',         label: 'Hitzebest\u00e4ndigkeit', color: '#B8891F', low: 'Schmilzt',    high: 'Bombenfest' },
-  { key: 'transport',    label: 'Transport',            color: '#7A4869', low: 'Zerbrechlich',   high: 'Unkaputtbar' },
-  { key: 'appearance',   label: 'Optik',                color: '#C77B4B', low: 'Schlicht',       high: 'Hingucker' },
-  { key: 'texture',      label: 'Textur',               color: '#5E7F99', low: 'Daneben',        high: 'Perfekt' },
-  { key: 'sweetness',    label: 'S\u00fc\u00dfe-Balance', color: '#9C7A9E', low: 'Unausgewogen', high: 'Genau richtig' },
-  { key: 'heaviness',    label: 'Leichtigkeit nach dem Essen', color: '#8FA88C', low: 'Bleischwer', high: 'Federleicht' },
   { key: 'makeAhead',    label: 'Vorbereitbarkeit',     color: '#B0894F', low: 'Nur frisch',     high: 'Tage vorher' },
-  { key: 'crowdPleaser', label: 'Gef\u00e4llt allen',   color: '#D0968C', low: 'Speziell',       high: 'Alle lieben ihn' },
+  { key: 'transport',    label: 'Transport',            color: '#7A4869', low: 'Zerbrechlich',   high: 'Unkaputtbar' },
+  { key: 'doability',    label: 'Machbarkeit',          color: '#7E9A78', low: 'Albtraum',       high: 'Einfach' },
 ];
-const TIER_KEYS = ['heat', 'transport', 'doability', 'taste'];
+// Diese vier bestimmen die Groesse der Kuchen-Etagen neben der Gesamtpunktzahl.
+const TIER_KEYS = ['appearance', 'crowdPleaser', 'sweetness', 'taste'];
 
 const TAG_GROUPS = [
   { key: 'flavourTags',  label: 'Geschmacksrichtung', presets: ['Schokolade','Vanille','Zitrone','Beeren','Nuss','Karamell','Kaffee','Apfel','Marzipan','Mohn'] },
@@ -299,7 +306,10 @@ const activeFiltersEl = document.getElementById('activeFilters');
 
 // ---------- build dynamic UI ----------
 document.getElementById('legend').innerHTML =
-  RATING_CRITERIA.map(c => '<span><i style="background:' + c.color + '"></i>' + c.label + '</span>').join('');
+  RATING_CRITERIA.map(c => '<span><i style="background:' + c.color + '"></i>' + c.label +
+    (c.genuss ? ' <b style="color:var(--plum);">\u2605</b>' : '') + '</span>').join('') +
+  '<span style="width:100%; text-align:center; margin-top:6px; opacity:.85;">' +
+  '<b style="color:var(--plum);">\u2605</b> z\u00e4hlt in die Gesamtwertung</span>';
 
 sortSelect.innerHTML =
   '<option value="overall">Sortieren: Gesamt</option>' +
@@ -308,8 +318,9 @@ sortSelect.innerHTML =
 
 document.getElementById('slidersGrid').innerHTML = RATING_CRITERIA.map(c =>
   '<div class="slider-field">' +
-    '<label for="s_' + c.key + '">' + c.label + ' <span class="val" id="v_' + c.key + '">3</span></label>' +
-    '<input type="range" min="1" max="5" value="3" id="s_' + c.key + '" />' +
+    '<label for="s_' + c.key + '">' + c.label + (c.genuss ? ' <b style="color:var(--plum);">\u2605</b>' : '') +
+      ' <span class="val" id="v_' + c.key + '">' + SCALE_DEFAULT + '</span></label>' +
+    '<input type="range" min="0" max="' + SCALE_MAX + '" value="' + SCALE_DEFAULT + '" id="s_' + c.key + '" />' +
     '<div class="slider-hint"><span>' + c.low + '</span><span>' + c.high + '</span></div>' +
   '</div>'
 ).join('');
@@ -348,9 +359,17 @@ function escapeHtml(str) {
 }
 function showError(msg) { errorBanner.innerHTML = '<div class="error-banner">' + msg + '</div>'; }
 function clearErrorBanner() { errorBanner.innerHTML = ''; }
+// In die Gesamtwertung zaehlen nur die Genuss-Kategorien (braut:true) -
+// also wie der Kuchen beim Essen ankommt, nicht wie aufwendig er zu machen ist.
+// "Fuellig" wird umgedreht: je leichter der Kuchen, desto besser.
+const GENUSS_CRITERIA = RATING_CRITERIA.filter(c => c.genuss);
+
 function overall(cake) {
-  const sum = RATING_CRITERIA.reduce((a, c) => a + Number(cake[c.key] || 0), 0);
-  return sum / RATING_CRITERIA.length;
+  const sum = GENUSS_CRITERIA.reduce(function (a, c) {
+    const v = Number(cake[c.key] || 0);
+    return a + (c.invertiert ? (SCALE_MAX - v) : v);
+  }, 0);
+  return sum / GENUSS_CRITERIA.length;
 }
 function splitTags(str) {
   return String(str || '').split(',').map(t => t.trim()).filter(Boolean);
@@ -458,8 +477,8 @@ function clearForm() {
   ['fName','fFlavor','fBaker','fDietary','fStorage','fTastedBy','fDate','fNotes'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('fStatus').value = 'Noch nicht probiert';
   RATING_CRITERIA.forEach(c => {
-    document.getElementById('s_' + c.key).value = 3;
-    document.getElementById('v_' + c.key).textContent = 3;
+    document.getElementById('s_' + c.key).value = SCALE_DEFAULT;
+    document.getElementById('v_' + c.key).textContent = SCALE_DEFAULT;
   });
   TAG_GROUPS.forEach(g => {
     selectedTags[g.key] = [];
@@ -483,7 +502,8 @@ function fillForm(cake) {
   document.getElementById('fStatus').value = cake.status || 'Noch nicht probiert';
 
   RATING_CRITERIA.forEach(c => {
-    const v = Number(cake[c.key]) || 3;
+    const raw = cake[c.key];
+    const v = (raw === '' || raw === null || raw === undefined || isNaN(Number(raw))) ? SCALE_DEFAULT : Number(raw);
     document.getElementById('s_' + c.key).value = v;
     document.getElementById('v_' + c.key).textContent = v;
   });
@@ -627,7 +647,7 @@ function cakeSvg(cake) {
   let y = baseY, rects = '';
   TIER_KEYS.forEach((key, i) => {
     const score = Number(cake[key] || 0);
-    const h = 6 + (score / 5) * maxTierH;
+    const h = 6 + (score / SCALE_MAX) * maxTierH;
     const inset = i * 4;
     const w = W - inset * 2;
     const x = (80 - w) / 2;
@@ -639,7 +659,7 @@ function cakeSvg(cake) {
 }
 
 function statRow(label, score, color) {
-  const pct = (Number(score || 0) / 5) * 100;
+  const pct = (Number(score || 0) / SCALE_MAX) * 100;
   return '<div class="stat-row"><div class="label">' + label + '</div>' +
     '<div class="bar-track"><div class="bar-fill" style="width:' + pct + '%; background:' + color + '"></div></div>' +
     '<div class="num">' + (score || 0) + '</div></div>';
@@ -679,7 +699,8 @@ function render() {
   else sorted.sort((a, b) => Number(b[sortMode] || 0) - Number(a[sortMode] || 0));
 
   listArea.innerHTML = sorted.map(cake => {
-    const rows = RATING_CRITERIA.map(c => statRow(c.label, cake[c.key], c.color)).join('');
+    const rows = RATING_CRITERIA.map(c =>
+      statRow(c.label + (c.genuss ? ' <b style="color:var(--plum);">\u2605</b>' : ''), cake[c.key], c.color)).join('');
     const dietTags = splitTags(cake.dietary);
     const tagBtns = allTagsOf(cake).map(t =>
       '<button class="tag" data-tag="' + escapeHtml(t) + '">#' + escapeHtml(t) + '</button>').join('');

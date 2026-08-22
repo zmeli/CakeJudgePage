@@ -47,6 +47,22 @@
     background: var(--bg-card); border: 1.5px solid var(--line); border-radius: 999px; padding: 10px 16px;
   }
 
+  .lock-row { display: flex; justify-content: center; margin-bottom: 14px; }
+  .lock-panel {
+    background: var(--bg-card); border: 1.5px solid var(--line); border-radius: 14px;
+    padding: 16px 18px; max-width: 420px; width: 100%; text-align: center; display: none;
+  }
+  .lock-panel.open { display: block; }
+  .lock-panel p { margin: 0 0 10px; font-size: 13px; color: var(--ink-soft); line-height: 1.5; }
+  .lock-inputs { display: flex; gap: 8px; }
+  .lock-inputs input {
+    flex: 1; font-family: 'Inter', sans-serif; font-size: 15px; padding: 10px 12px;
+    border: 1.5px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink);
+  }
+  .lock-inputs input:focus { outline: 2px solid var(--gold); outline-offset: 1px; }
+  .lock-err { color: #8A3A3A; font-size: 12.5px; margin-top: 8px; min-height: 16px; }
+  .lock-state { font-size: 12px; color: var(--ink-soft); font-weight: 600; }
+
   .searchbar { display: flex; justify-content: center; margin-bottom: 10px; }
   .searchbar input {
     font-family: 'Inter', sans-serif; font-size: 14px; padding: 11px 18px; width: 100%; max-width: 420px;
@@ -142,6 +158,17 @@
   .mini-btn:hover { color: var(--plum); border-color: var(--plum); }
   .mini-btn.danger:hover { color: #a83232; border-color: #a83232; }
 
+  .verlauf {
+    margin-top: 12px; border-top: 1px dashed var(--line); padding-top: 10px;
+    font-size: 12px; color: var(--ink-soft); display: none;
+  }
+  .verlauf.open { display: block; }
+  .verlauf-zeile { padding: 4px 0; border-bottom: 1px solid rgba(216,219,206,.5); line-height: 1.45; }
+  .verlauf-zeile:last-child { border-bottom: none; }
+  .verlauf-zeile b { color: var(--plum); font-weight: 600; }
+  .verlauf-wann { color: #9A8F84; font-size: 11px; }
+  .verlauf-leer { font-style: italic; padding: 4px 0; }
+
   .loading { text-align: center; color: var(--ink-soft); font-size: 13px; padding: 30px; }
   .error-banner { background: #F3DEDE; color: #8A3A3A; border-radius: 10px; padding: 12px 16px; font-size: 13px; text-align: center; margin-bottom: 20px; line-height: 1.5; }
 </style>
@@ -168,6 +195,7 @@
 
   <div class="toolbar">
     <button class="btn-primary" id="toggleFormBtn">Kuchen hinzuf&uuml;gen</button>
+    <button class="btn-ghost" id="lockBtn">&#128274; Bearbeiten freischalten</button>
     <select class="sort-select" id="sortSelect"></select>
     <select class="status-filter" id="statusFilter">
       <option value="all">Alle Status</option>
@@ -175,6 +203,20 @@
       <option value="Nope">Nope</option>
       <option value="Noch nicht probiert">Noch nicht probiert</option>
     </select>
+  </div>
+
+  <div class="lock-row">
+    <div class="lock-panel" id="lockPanel">
+      <p>Ansehen darf jeder. Zum Hinzuf&uuml;gen, Bearbeiten und Entfernen brauchst du Namen und Kennwort. Der Name wird im Verlauf mitgespeichert.</p>
+      <div class="lock-inputs" style="margin-bottom:8px;">
+        <input type="text" id="nameInput" placeholder="Dein Name" autocomplete="name" />
+      </div>
+      <div class="lock-inputs">
+        <input type="password" id="pwInput" placeholder="Kennwort" autocomplete="current-password" />
+        <button class="btn-primary" id="pwSubmit">Freischalten</button>
+      </div>
+      <div class="lock-err" id="pwErr"></div>
+    </div>
   </div>
 
   <div class="searchbar">
@@ -292,6 +334,12 @@ let statusFilterVal = 'all';
 let searchTerm = '';
 let activeTags = [];
 let editingId = null;
+let unlocked = false;
+let pendingEditId = null;
+let bearbeiterName = '';
+let verlaufDaten = null;
+let verlaufOffen = {};
+let passwort = '';
 let selectedTags = {};
 TAG_GROUPS.forEach(g => selectedTags[g.key] = []);
 
@@ -306,6 +354,12 @@ const sortSelect = document.getElementById('sortSelect');
 const statusFilter = document.getElementById('statusFilter');
 const searchInput = document.getElementById('searchInput');
 const activeFiltersEl = document.getElementById('activeFilters');
+const lockBtn = document.getElementById('lockBtn');
+const lockPanel = document.getElementById('lockPanel');
+const pwInput = document.getElementById('pwInput');
+const nameInput = document.getElementById('nameInput');
+const pwSubmit = document.getElementById('pwSubmit');
+const pwErr = document.getElementById('pwErr');
 
 // ---------- build dynamic UI ----------
 document.getElementById('legend').innerHTML =
@@ -439,7 +493,7 @@ function postToSheet(payload) {
     const input = document.createElement('input');
     input.type = 'hidden';
     input.name = 'payload';
-    input.value = JSON.stringify(payload);
+    input.value = JSON.stringify(Object.assign({ pw: passwort, bearbeiter: bearbeiterName }, payload));
     form.appendChild(input);
 
     document.body.appendChild(form);
@@ -548,6 +602,11 @@ function collectFormData() {
 }
 
 toggleFormBtn.addEventListener('click', () => {
+  if (!unlocked) {
+    lockPanel.classList.add('open');
+    pwInput.focus();
+    return;
+  }
   if (formCard.classList.contains('open') && editingId) { clearForm(); return; }
   formCard.classList.toggle('open');
   if (formCard.classList.contains('open')) { clearForm(); document.getElementById('fName').focus(); }
@@ -555,6 +614,7 @@ toggleFormBtn.addEventListener('click', () => {
 cancelBtn.addEventListener('click', () => { formCard.classList.remove('open'); clearForm(); });
 
 saveBtn.addEventListener('click', async () => {
+  if (!unlocked) { showError('Zum Speichern zuerst das Kennwort eingeben.'); return; }
   const data = collectFormData();
   if (!data.name) { document.getElementById('fName').focus(); return; }
 
@@ -570,6 +630,7 @@ saveBtn.addEventListener('click', async () => {
       data.createdAt = Date.now();
     }
     await postToSheet(data);
+    verlaufDaten = null;  // Verlauf neu laden, es kamen Eintraege dazu
 
     // Google braucht kurz, bis die Zeile im Sheet steht.
     showInfo('Gespeichert \u2013 Liste wird aktualisiert \u2026');
@@ -582,7 +643,7 @@ saveBtn.addEventListener('click', async () => {
 
     const found = cakes.some(c => String(c.id) === String(data.id));
     if (found) { showInfo(wasEditing ? '\u00c4nderungen gespeichert.' : 'Kuchen gespeichert.'); setTimeout(clearErrorBanner, 2500); }
-    else showError('Der Eintrag kam nicht im Sheet an. Pr\u00fcfe, ob die Bereitstellung auf &bdquo;Anyone&ldquo; steht und Zeile 1 des Sheets alle Spalten\u00fcberschriften enth\u00e4lt.');
+    else showError('Der Eintrag kam nicht im Sheet an. M\u00f6gliche Ursachen: falsches Kennwort, Bereitstellung nicht auf &bdquo;Anyone&ldquo;, oder in Zeile 1 des Sheets fehlen Spalten\u00fcberschriften.');
   } catch (e) {
     showError('Konnte nicht gespeichert werden: ' + escapeHtml(e.message));
     console.error('Speicherfehler:', e);
@@ -593,9 +654,11 @@ saveBtn.addEventListener('click', async () => {
 });
 
 async function deleteCake(id) {
+  if (!unlocked) { showError('Zum Entfernen zuerst das Kennwort eingeben.'); return; }
   if (!confirm('Diesen Kuchen wirklich aus der Liste entfernen?')) return;
   try {
     await postToSheet({ action: 'delete', id: id });
+    verlaufDaten = null;
     await new Promise(r => setTimeout(r, 1200));
     await loadCakes();
     render();
@@ -731,9 +794,12 @@ function render() {
         (cake.storage ? '<div class="meta-line" style="margin-top:10px;">\u2744 ' + escapeHtml(cake.storage) + '</div>' : '') +
         (cake.notes ? '<div class="cake-notes">' + escapeHtml(cake.notes) + '</div>' : '') +
         '<div class="card-actions">' +
-          '<button class="mini-btn edit-btn" data-id="' + escapeHtml(cake.id) + '">Bearbeiten</button>' +
-          '<button class="mini-btn danger del-btn" data-id="' + escapeHtml(cake.id) + '">Entfernen</button>' +
+          '<button class="mini-btn edit-btn" data-id="' + escapeHtml(cake.id) + '">' +
+            (unlocked ? '' : '\uD83D\uDD12 ') + 'Bearbeiten</button>' +
+          '<button class="mini-btn verlauf-btn" data-id="' + escapeHtml(cake.id) + '">Verlauf</button>' +
+          (unlocked ? '<button class="mini-btn danger del-btn" data-id="' + escapeHtml(cake.id) + '">Entfernen</button>' : '') +
         '</div>' +
+        '<div class="verlauf" id="verlauf_' + escapeHtml(cake.id) + '"></div>' +
       '</div></div>';
   }).join('');
 }
@@ -743,6 +809,15 @@ function render() {
 listArea.addEventListener('click', function (ev) {
   const editBtn = ev.target.closest('.edit-btn');
   if (editBtn) {
+    if (!unlocked) {
+      // Wunsch merken und nach dem Freischalten direkt oeffnen
+      pendingEditId = editBtn.dataset.id;
+      lockPanel.classList.add('open');
+      pwErr.textContent = '';
+      lockPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(function () { pwInput.focus(); }, 300);
+      return;
+    }
     const cake = cakes.filter(c => String(c.id) === String(editBtn.dataset.id))[0];
     if (cake) { fillForm(cake); }
     else { showError('Dieser Eintrag hat keine ID im Sheet. Pr\u00fcfe, ob die Spalte &bdquo;id&ldquo; in Zeile 1 steht und gef\u00fcllt ist.'); }
@@ -751,12 +826,150 @@ listArea.addEventListener('click', function (ev) {
   const delBtn = ev.target.closest('.del-btn');
   if (delBtn) { deleteCake(delBtn.dataset.id); return; }
 
+  const verlaufBtn = ev.target.closest('.verlauf-btn');
+  if (verlaufBtn) {
+    const id = verlaufBtn.dataset.id;
+    const box = document.getElementById('verlauf_' + id);
+    if (!box) return;
+    if (box.classList.contains('open')) {
+      box.classList.remove('open');
+      verlaufOffen[id] = false;
+    } else {
+      verlaufOffen[id] = true;
+      zeigeVerlauf(id, box);
+    }
+    return;
+  }
+
   const tagBtn = ev.target.closest('.tag');
   if (tagBtn && tagBtn.dataset.tag) { addTagFilter(tagBtn.dataset.tag); }
 });
 
+// ---------- Verlauf ----------
+const FELD_LABELS = {};
+RATING_CRITERIA.forEach(c => FELD_LABELS[c.key] = c.label);
+TAG_GROUPS.forEach(g => FELD_LABELS[g.key] = g.label);
+Object.assign(FELD_LABELS, {
+  name: 'Name', flavor: 'Geschmack/F\u00fcllung', baker: 'B\u00e4ckerei', dietary: 'Unvertr\u00e4glichkeiten',
+  storage: 'Lagerung', notes: 'Notizen', tastedBy: 'Probiert von', dateTasted: 'Datum', status: 'Status'
+});
+
+async function ladeVerlauf() {
+  if (verlaufDaten) return verlaufDaten;
+  const res = await fetch(APPS_SCRIPT_URL + '?verlauf=1');
+  const data = await res.json();
+  verlaufDaten = Array.isArray(data) ? data : [];
+  return verlaufDaten;
+}
+
+function datumKurz(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return String(iso).slice(0, 16);
+  return d.toLocaleString('de-AT', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' });
+}
+
+function kuerze(v) {
+  const t = String(v === '' || v == null ? '\u2013' : v);
+  return escapeHtml(t.length > 45 ? t.slice(0, 45) + '\u2026' : t);
+}
+
+function verlaufHtml(eintraege) {
+  if (!eintraege.length) return '<div class="verlauf-leer">Noch keine \u00c4nderungen protokolliert.</div>';
+  return eintraege.slice().reverse().slice(0, 40).map(function (v) {
+    const wann = '<span class="verlauf-wann">' + escapeHtml(datumKurz(v.zeitstempel)) + '</span>';
+    if (v.aktion !== 'ge\u00e4ndert') {
+      return '<div class="verlauf-zeile"><b>' + escapeHtml(v.wer) + '</b> hat den Eintrag ' +
+        escapeHtml(v.aktion) + '. ' + wann + '</div>';
+    }
+    const feld = FELD_LABELS[v.feld] || v.feld;
+    return '<div class="verlauf-zeile"><b>' + escapeHtml(v.wer) + '</b> \u00e4nderte ' +
+      escapeHtml(feld) + ': ' + kuerze(v.alt) + ' \u2192 ' + kuerze(v.neu) + ' ' + wann + '</div>';
+  }).join('');
+}
+
+async function zeigeVerlauf(id, box) {
+  box.innerHTML = '<div class="verlauf-leer">Verlauf wird geladen \u2026</div>';
+  box.classList.add('open');
+  try {
+    const alle = await ladeVerlauf();
+    box.innerHTML = verlaufHtml(alle.filter(function (v) { return String(v.kuchenId) === String(id); }));
+  } catch (e) {
+    box.innerHTML = '<div class="verlauf-leer">Verlauf konnte nicht geladen werden.</div>';
+  }
+}
+
+// ---------- Kennwort ----------
+function setUnlocked(state) {
+  unlocked = state;
+  if (state) {
+    lockBtn.innerHTML = '\uD83D\uDD13 ' + escapeHtml(bearbeiterName) + ' \u2013 sperren';
+    lockPanel.classList.remove('open');
+    pwErr.textContent = '';
+    if (pendingEditId) {
+      const ziel = cakes.filter(c => String(c.id) === String(pendingEditId))[0];
+      pendingEditId = null;
+      if (ziel) { render(); fillForm(ziel); return; }
+    }
+  } else {
+    pendingEditId = null;
+    lockBtn.innerHTML = '\uD83D\uDD12 Bearbeiten freischalten';
+    passwort = '';
+    try { sessionStorage.removeItem('cakePw'); } catch (e) {}
+    formCard.classList.remove('open');
+    clearForm();
+  }
+  render();
+}
+
+async function pruefeKennwort(pw) {
+  const res = await fetch(APPS_SCRIPT_URL + '?pw=' + encodeURIComponent(pw));
+  const data = await res.json();
+  return data && data.ok === true;
+}
+
+lockBtn.addEventListener('click', function () {
+  if (unlocked) { setUnlocked(false); return; }
+  lockPanel.classList.toggle('open');
+  if (lockPanel.classList.contains('open')) pwInput.focus();
+});
+
+async function versucheFreischalten() {
+  const pw = pwInput.value;
+  const nm = nameInput.value.trim();
+  if (!nm) { pwErr.textContent = 'Bitte zuerst deinen Namen eintragen.'; nameInput.focus(); return; }
+  if (!pw) { pwInput.focus(); return; }
+  pwSubmit.disabled = true;
+  pwErr.textContent = '';
+  try {
+    if (await pruefeKennwort(pw)) {
+      passwort = pw;
+      bearbeiterName = nm;
+      pwInput.value = '';
+      try { sessionStorage.setItem('cakePw', pw); localStorage.setItem('cakeName', nm); } catch (e) {}
+      setUnlocked(true);
+    } else {
+      pwErr.textContent = 'Das war nicht das richtige Kennwort.';
+    }
+  } catch (e) {
+    pwErr.textContent = 'Kennwort konnte gerade nicht gepr\u00fcft werden.';
+  } finally {
+    pwSubmit.disabled = false;
+  }
+}
+pwSubmit.addEventListener('click', versucheFreischalten);
+pwInput.addEventListener('keydown', function (ev) { if (ev.key === 'Enter') versucheFreischalten(); });
+
 (async function init() {
   await loadCakes();
+  // Innerhalb derselben Browser-Sitzung freigeschaltet bleiben
+  try {
+    const gespeicherterName = localStorage.getItem('cakeName');
+    if (gespeicherterName) { nameInput.value = gespeicherterName; bearbeiterName = gespeicherterName; }
+    const gespeichert = sessionStorage.getItem('cakePw');
+    if (gespeichert && bearbeiterName && await pruefeKennwort(gespeichert)) { passwort = gespeichert; unlocked = true; }
+  } catch (e) {}
+  setUnlocked(unlocked);
   renderFilters();
   render();
 })();

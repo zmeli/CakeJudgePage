@@ -65,6 +65,16 @@
   .btn-reveal:disabled { opacity: .35; animation: none; cursor: default; transform: none; }
   @keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(227,178,60,.55)} 70%{box-shadow:0 0 0 30px rgba(227,178,60,0)} 100%{box-shadow:0 0 0 0 rgba(227,178,60,0)} }
 
+  .tempo-row { margin-top: 16px; display: flex; gap: 6px; justify-content: center; align-items: center; flex-wrap: wrap; }
+  .tempo-row > span { font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-dim); font-weight: 800; margin-right: 4px; }
+  .tempo-btn {
+    font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 700; cursor: pointer;
+    background: transparent; color: var(--ink-dim); border: 1.5px solid rgba(255,255,255,.16);
+    padding: 7px 15px; border-radius: 999px;
+  }
+  .tempo-btn:hover { color: var(--gold-soft); border-color: rgba(227,178,60,.5); }
+  .tempo-btn.on { background: rgba(227,178,60,.16); color: var(--gold); border-color: var(--gold); }
+
   .btn-small {
     font-family:'Inter',sans-serif; font-size:13px; font-weight:700; background:transparent;
     color:var(--gold); border:1.5px solid var(--gold); padding:10px 20px; border-radius:999px; cursor:pointer; margin-top:18px;
@@ -162,6 +172,15 @@
 
   #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 45; }
 
+  @media (max-width: 560px) {
+    #overlay { padding: 24px 18px; }
+    #countWord { font-size: 19px; line-height: 1.45; }
+    #notarStep { font-size: 15px; line-height: 1.45; }
+    #notar { max-width: 100%; }
+    .announcer { font-size: 17px; min-height: 52px; padding: 0 4px; }
+    #ticker { font-size: 12px; padding: 10px 0; }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .btn-reveal, #spot::before, #ticker .track, .champ.gold.crowned { animation: none !important; }
     .champ, .award { opacity: 1; transform: none; }
@@ -197,6 +216,12 @@
 
   <div class="cta-wrap">
     <button class="btn-reveal" id="revealBtn">Enth&uuml;llung starten</button>
+    <div class="tempo-row">
+      <span>Tempo:</span>
+      <button class="tempo-btn" data-tempo="0.7">Z&uuml;gig</button>
+      <button class="tempo-btn on" data-tempo="1">Normal</button>
+      <button class="tempo-btn" data-tempo="1.6">Gem&uuml;tlich</button>
+    </div>
   </div>
 
   <div class="announcer" id="announcer"></div>
@@ -244,7 +269,11 @@ function overall(c){
 }
 function esc(s){ const d=document.createElement('div'); d.textContent=(s==null?'':String(s)); return d.innerHTML; }
 function tagsOf(c){ let o=[]; TAG_KEYS.forEach(function(k){ String(c[k]||'').split(',').map(function(t){return t.trim();}).filter(Boolean).forEach(function(t){o.push(t);}); }); return o; }
-function sleep(ms){ return new Promise(function(r){ setTimeout(r, reduceMotion ? Math.min(ms,140) : ms); }); }
+// Wichtig: "Bewegung reduzieren" schaltet Animationen ab, NICHT die Lesezeit.
+// Vorher wurden hier alle Pausen gekuerzt - dadurch rauschte die Gala auf
+// Handys mit aktivierter Systemeinstellung unlesbar durch.
+let tempo = 1;  // 1 = normal, 1.5 = gemuetlich, 0.6 = zackig
+function sleep(ms){ return new Promise(function(r){ setTimeout(r, Math.round(ms * tempo)); }); }
 function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
 
 // ---------- Texte ----------
@@ -635,6 +664,14 @@ async function runReveal(){
   revealBtn.disabled = false;
   revealBtn.textContent = 'Nochmal, mit Gef\u00fchl';
 }
+
+document.querySelectorAll('.tempo-btn').forEach(function(b){
+  b.addEventListener('click', function(){
+    tempo = parseFloat(b.dataset.tempo);
+    document.querySelectorAll('.tempo-btn').forEach(function(x){ x.classList.remove('on'); });
+    b.classList.add('on');
+  });
+});
 
 revealBtn.addEventListener('click', runReveal);
 

@@ -1223,7 +1223,12 @@ async function zeigeVerlauf(id, box) {
 
 // ---------- Mitbewerten, Aufteilung, QR ----------
 function gastLink(id) {
-  return new URL('bewerten.html?id=' + encodeURIComponent(id), location.href).href;
+  // Nicht ueber relative Aufloesung: fehlt der Schraegstrich am Ende der
+  // Adresse, landet "bewerten.html" sonst eine Ebene zu hoch (404).
+  let pfad = location.pathname;
+  if (/\.html?$/i.test(pfad)) pfad = pfad.replace(/[^/]*$/, '');
+  else if (pfad.charAt(pfad.length - 1) !== '/') pfad += '/';
+  return location.origin + pfad + 'bewerten.html?id=' + encodeURIComponent(id);
 }
 
 function aufteilungHtml(cake) {

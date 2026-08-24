@@ -158,6 +158,63 @@
   .mini-btn:hover { color: var(--plum); border-color: var(--plum); }
   .mini-btn.danger:hover { color: #a83232; border-color: #a83232; }
 
+  .cake-bild { margin-top: 12px; }
+  .cake-bild img { width: 100%; max-height: 300px; object-fit: cover; border-radius: 10px; display: block; border: 1px solid var(--line); }
+  .bild-platzhalter {
+    background: rgba(75,33,56,.05); border: 1px dashed var(--line); border-radius: 10px;
+    padding: 26px 12px; text-align: center; font-size: 12px; color: var(--ink-soft);
+  }
+  .bild-feld { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .bild-vorschau { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1.5px solid var(--line); display: none; }
+  .bild-vorschau.on { display: block; }
+  .bild-info { font-size: 11.5px; color: var(--ink-soft); }
+
+  .stimmen-btn {
+    background: none; border: none; font-family: 'Inter', sans-serif; cursor: pointer;
+    font-size: 10px; color: var(--plum); font-weight: 700; margin-top: 6px;
+    text-decoration: underline; text-underline-offset: 2px; padding: 2px;
+  }
+  .stimmen-btn:hover { color: var(--gold); }
+
+  .aufteilung { margin-top: 12px; border-top: 1px dashed var(--line); padding-top: 10px; display: none; }
+  .aufteilung.open { display: block; }
+  .auf-kopf { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-soft); font-weight: 700; margin-bottom: 8px; }
+  .auf-zeile { display: grid; grid-template-columns: 110px 1fr auto; gap: 10px; align-items: center; padding: 5px 0; border-bottom: 1px solid rgba(216,219,206,.5); font-size: 12.5px; }
+  .auf-zeile:last-child { border-bottom: none; }
+  .auf-wer { font-weight: 600; color: var(--plum); overflow: hidden; text-overflow: ellipsis; }
+  .auf-werte { font-size: 11.5px; color: var(--ink-soft); }
+  .auf-schnitt { font-family: 'Fraunces', serif; font-weight: 600; color: var(--plum); font-size: 14px; }
+  .auf-basis { font-size: 10px; background: rgba(184,137,31,.16); color: #7A5A10; padding: 1px 7px; border-radius: 999px; font-weight: 700; margin-left: 5px; }
+
+  .mitgabeln, .qrbox { margin-top: 12px; border-top: 1px dashed var(--line); padding-top: 12px; display: none; }
+  .mitgabeln.open, .qrbox.open { display: block; }
+  .mg-slider { margin-bottom: 12px; }
+  .mg-slider label { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; color: var(--ink-soft); font-weight: 600; }
+  .mg-slider label b { font-family: 'Fraunces', serif; font-size: 15px; color: var(--plum); }
+  .mg-slider input[type=range] { width: 100%; accent-color: var(--plum); }
+  .mg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 18px; }
+  @media (max-width: 520px) { .mg-grid { grid-template-columns: 1fr; } }
+  .mg-name { width: 100%; font-family: 'Inter', sans-serif; font-size: 14px; padding: 9px 11px; border: 1.5px solid var(--line); border-radius: 8px; background: #fff; margin-bottom: 10px; }
+
+  .qr-canvas { display: flex; justify-content: center; padding: 14px; background: #fff; border-radius: 10px; border: 1px solid var(--line); }
+  .qr-hinweis { font-size: 12px; color: var(--ink-soft); text-align: center; margin-top: 8px; line-height: 1.5; }
+  .qr-link { font-size: 11px; color: var(--plum); word-break: break-all; text-align: center; display: block; margin-top: 6px; }
+
+  .komm { margin-top: 12px; border-top: 1px dashed var(--line); padding-top: 10px; display: none; }
+  .komm.open { display: block; }
+  .komm-zeile { padding: 7px 0; border-bottom: 1px solid rgba(216,219,206,.5); font-size: 13px; line-height: 1.5; }
+  .komm-zeile:last-of-type { border-bottom: none; }
+  .komm-kopf { font-size: 11.5px; color: var(--ink-soft); }
+  .komm-kopf b { color: var(--plum); font-weight: 600; font-size: 12.5px; }
+  .komm-text { white-space: pre-wrap; margin-top: 2px; }
+  .komm-neu { display: flex; gap: 8px; margin-top: 10px; }
+  .komm-neu textarea {
+    flex: 1; font-family: 'Inter', sans-serif; font-size: 13.5px; padding: 8px 10px; min-height: 42px;
+    border: 1.5px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink); resize: vertical;
+  }
+  .komm-neu textarea:focus { outline: 2px solid var(--gold); outline-offset: 1px; }
+  .komm-leer { font-style: italic; font-size: 12.5px; color: var(--ink-soft); padding: 4px 0; }
+
   .verlauf {
     margin-top: 12px; border-top: 1px dashed var(--line); padding-top: 10px;
     font-size: 12px; color: var(--ink-soft); display: none;
@@ -182,8 +239,12 @@
     <p class="sub">Jeder Kuchen, den wir im Dienste der Wissenschaft essen mussten – bewertet nach Geschmack, Machbarkeit, Hitzebeständigkeit, Transportfähigkeit und der Frage, ob wir danach noch tanzen können.</p>
     <div style="margin-top:18px;">
       <a href="champions.html" style="display:inline-block; font-family:'Fraunces',serif; font-style:italic; font-size:15px;
-         color:#4B2138; text-decoration:none; border:1.5px solid #B8891F; border-radius:999px; padding:9px 22px;">
+         color:#4B2138; text-decoration:none; border:1.5px solid #B8891F; border-radius:999px; padding:9px 22px; margin:0 4px 6px;">
         &#127942; Zur Ehrenhalle
+      </a>
+      <a href="vorschlaege.html" style="display:inline-block; font-family:'Fraunces',serif; font-style:italic; font-size:15px;
+         color:#4B2138; text-decoration:none; border:1.5px solid #B8891F; border-radius:999px; padding:9px 22px; margin:0 4px 6px;">
+        &#128221; Vorschl&auml;ge
       </a>
     </div>
     <div class="notice">Diese Seite ist geteilt &ndash; alle mit dem Link k&ouml;nnen Kuchen sehen, hinzuf&uuml;gen und bearbeiten. Die Daten liegen in einem Google Sheet, nicht auf dieser Seite.</div>
@@ -273,6 +334,15 @@
     <div class="sliders-grid" id="slidersGrid"></div>
 
     <div class="field" style="margin-top: 14px;">
+      <label for="fBild">Foto</label>
+      <div class="bild-feld">
+        <input type="file" id="fBild" accept="image/*" style="flex:1; min-width:180px;" />
+        <img class="bild-vorschau" id="bildVorschau" alt="Vorschau" />
+      </div>
+      <div class="bild-info" id="bildInfo">Wird beim Hochladen automatisch verkleinert.</div>
+    </div>
+
+    <div class="field">
       <label for="fNotes">Notizen</label>
       <textarea id="fNotes" placeholder="Alles, was erw&auml;hnenswert ist &ndash; wie er transportiert wurde, was die B&auml;ckerin gesagt hat &hellip;"></textarea>
     </div>
@@ -339,6 +409,11 @@ let pendingEditId = null;
 let bearbeiterName = '';
 let verlaufDaten = null;
 let verlaufOffen = {};
+let kommentarDaten = null;
+let bildDataUrl = '';
+let bildEntfernt = false;
+let bewertungen = [];
+let aufteilungOffen = {};
 let passwort = '';
 let selectedTags = {};
 TAG_GROUPS.forEach(g => selectedTags[g.key] = []);
@@ -421,9 +496,31 @@ function clearErrorBanner() { errorBanner.innerHTML = ''; }
 // "Fuellig" wird umgedreht: je leichter der Kuchen, desto besser.
 const GENUSS_CRITERIA = RATING_CRITERIA.filter(c => c.genuss);
 
+// Alle Stimmen zu einem Kuchen: die Ersteintragung plus jede spaetere Bewertung.
+function stimmenFuer(cake) {
+  const eigene = { wer: cake.erstelltVon || 'Ersteintrag', quelle: 'basis', id: cake.id };
+  GENUSS_CRITERIA.forEach(c => { eigene[c.key] = Number(cake[c.key] || 0); });
+  const weitere = bewertungen.filter(b => String(b.kuchenId) === String(cake.id))
+    .map(b => Object.assign({ quelle: 'extra' }, b));
+  return [eigene].concat(weitere);
+}
+
+// Durchschnitt je Genusskategorie ueber alle Stimmen
+function schnittWerte(cake) {
+  const stimmen = stimmenFuer(cake);
+  const out = {};
+  GENUSS_CRITERIA.forEach(function (c) {
+    const summe = stimmen.reduce(function (a, s) { return a + Number(s[c.key] || 0); }, 0);
+    out[c.key] = summe / stimmen.length;
+  });
+  out._anzahl = stimmen.length;
+  return out;
+}
+
 function overall(cake) {
+  const w = schnittWerte(cake);
   const sum = GENUSS_CRITERIA.reduce(function (a, c) {
-    const v = Number(cake[c.key] || 0);
+    const v = w[c.key];
     return a + (c.invertiert ? (SCALE_MAX - v) : v);
   }, 0);
   return sum / GENUSS_CRITERIA.length;
@@ -459,6 +556,11 @@ async function loadCakes() {
     try { cakes = JSON.parse(text); }
     catch (parseErr) { throw new Error('Das Sheet hat keine Kuchendaten zur&uuml;ckgegeben. Meist ist der Zugriff der Bereitstellung nicht auf &bdquo;Anyone&ldquo; gesetzt.'); }
     if (!Array.isArray(cakes)) throw new Error('Unerwartetes Datenformat. Pr&uuml;fe, ob das Tabellenblatt exakt &bdquo;Cakes&ldquo; hei&szlig;t.');
+    try {
+      const rb = await fetch(APPS_SCRIPT_URL + '?bewertungen=1');
+      const bd = await rb.json();
+      bewertungen = Array.isArray(bd) ? bd : [];
+    } catch (e) { bewertungen = []; }
     clearErrorBanner();
   } catch (e) {
     clearTimeout(timer);
@@ -542,6 +644,10 @@ function clearForm() {
     document.getElementById('custom_' + g.key).value = '';
   });
   document.querySelectorAll('.chip').forEach(ch => ch.classList.remove('on'));
+  bildDataUrl = ''; bildEntfernt = false;
+  bildInput.value = '';
+  bildVorschau.classList.remove('on');
+  bildInfo.textContent = 'Wird beim Hochladen automatisch verkleinert.';
 }
 
 function fillForm(cake) {
@@ -577,6 +683,24 @@ function fillForm(cake) {
     });
   });
 
+  bildDataUrl = ''; bildEntfernt = false; bildInput.value = '';
+  if (cake.imageUrl) {
+    bildVorschau.classList.add('on');
+    bildVorschau.removeAttribute('src');
+    holeBild(cake.id).then(function (d) { if (d) bildVorschau.src = d; }).catch(function () {});
+    bildInfo.innerHTML = 'Aktuelles Foto. Neues w\u00e4hlen ersetzt es. ' +
+      '<button type="button" class="mini-btn" id="bildWegBtn" style="margin-left:6px;">Foto entfernen</button>';
+    const wegBtn = document.getElementById('bildWegBtn');
+    if (wegBtn) wegBtn.addEventListener('click', function () {
+      bildEntfernt = true; bildDataUrl = '';
+      bildVorschau.classList.remove('on');
+      bildInfo.textContent = 'Foto wird beim Speichern entfernt.';
+    });
+  } else {
+    bildVorschau.classList.remove('on');
+    bildInfo.textContent = 'Wird beim Hochladen automatisch verkleinert.';
+  }
+
   formCard.classList.add('open');
   formCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
@@ -598,6 +722,8 @@ function collectFormData() {
     const custom = splitTags(document.getElementById('custom_' + g.key).value);
     data[g.key] = selectedTags[g.key].concat(custom).join(', ');
   });
+  if (bildDataUrl) data.imageData = bildDataUrl;
+  else if (bildEntfernt) data.imageUrl = '';
   return data;
 }
 
@@ -628,7 +754,9 @@ saveBtn.addEventListener('click', async () => {
     } else {
       data.id = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random());
       data.createdAt = Date.now();
+      data.erstelltVon = bearbeiterName;
     }
+    if (data.imageData || data.imageUrl === '') delete bildCache[data.id];
     await postToSheet(data);
     verlaufDaten = null;  // Verlauf neu laden, es kamen Eintraege dazu
 
@@ -709,10 +837,11 @@ function renderFilters() {
 function cakeSvg(cake) {
   const colorMap = {};
   RATING_CRITERIA.forEach(c => colorMap[c.key] = c.color);
+  const schnitt = schnittWerte(cake);
   const W = 80, maxTierH = 15, tierGap = 2, baseY = 92;
   let y = baseY, rects = '';
   TIER_KEYS.forEach((key, i) => {
-    const score = Number(cake[key] || 0);
+    const score = schnitt[key] !== undefined ? schnitt[key] : Number(cake[key] || 0);
     const h = 6 + (score / SCALE_MAX) * maxTierH;
     const inset = i * 4;
     const w = W - inset * 2;
@@ -762,11 +891,21 @@ function render() {
   const sorted = filtered.slice();
   if (sortMode === 'overall') sorted.sort((a, b) => overall(b) - overall(a));
   else if (sortMode === 'recent') sorted.sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
-  else sorted.sort((a, b) => Number(b[sortMode] || 0) - Number(a[sortMode] || 0));
+  else {
+    const istGenuss = GENUSS_CRITERIA.some(c => c.key === sortMode);
+    sorted.sort(function (a, b) {
+      const va = istGenuss ? schnittWerte(a)[sortMode] : Number(a[sortMode] || 0);
+      const vb = istGenuss ? schnittWerte(b)[sortMode] : Number(b[sortMode] || 0);
+      return vb - va;
+    });
+  }
 
   listArea.innerHTML = sorted.map(cake => {
-    const rows = RATING_CRITERIA.map(c =>
-      statRow(c.label + (c.genuss ? ' <b style="color:var(--plum);">\u2605</b>' : ''), cake[c.key], c.color)).join('');
+    const schnitt = schnittWerte(cake);
+    const rows = RATING_CRITERIA.map(function (c) {
+      const wert = c.genuss ? schnitt[c.key].toFixed(1) : (cake[c.key] || 0);
+      return statRow(c.label + (c.genuss ? ' <b style="color:var(--plum);">\u2605</b>' : ''), wert, c.color);
+    }).join('');
     const dietTags = splitTags(cake.dietary);
     const tagBtns = allTagsOf(cake).map(t =>
       '<button class="tag" data-tag="' + escapeHtml(t) + '">#' + escapeHtml(t) + '</button>').join('');
@@ -776,6 +915,8 @@ function render() {
       '<div class="cake-svg-wrap">' + cakeSvg(cake) +
         '<div class="score">' + overall(cake).toFixed(1) + '</div>' +
         '<div class="score-label">gesamt</div>' +
+        '<button class="stimmen-btn" data-id="' + escapeHtml(cake.id) + '">' +
+          schnitt._anzahl + (schnitt._anzahl === 1 ? ' Stimme' : ' Stimmen') + '</button>' +
       '</div>' +
       '<div class="cake-body">' +
         '<div class="cake-top"><div>' +
@@ -789,23 +930,41 @@ function render() {
           (cake.tastedBy ? '<span>Probiert von ' + escapeHtml(cake.tastedBy) + '</span>' : '') +
           (cake.dateTasted ? '<span>' + escapeHtml(String(cake.dateTasted).slice(0, 10)) + '</span>' : '') +
         '</div>' +
+        (cake.imageUrl ? '<div class="cake-bild" data-bild-id="' + escapeHtml(cake.id) + '">' +
+          '<div class="bild-platzhalter">Foto wird geladen \u2026</div></div>' : '') +
         ((tagBtns || dietBtns) ? '<div class="tags">' + tagBtns + dietBtns + '</div>' : '') +
         '<div class="stat-rows">' + rows + '</div>' +
+        '<div class="aufteilung" id="auf_' + escapeHtml(cake.id) + '"></div>' +
         (cake.storage ? '<div class="meta-line" style="margin-top:10px;">\u2744 ' + escapeHtml(cake.storage) + '</div>' : '') +
         (cake.notes ? '<div class="cake-notes">' + escapeHtml(cake.notes) + '</div>' : '') +
         '<div class="card-actions">' +
           '<button class="mini-btn edit-btn" data-id="' + escapeHtml(cake.id) + '">' +
             (unlocked ? '' : '\uD83D\uDD12 ') + 'Bearbeiten</button>' +
+          '<button class="mini-btn mitgabeln-btn" data-id="' + escapeHtml(cake.id) + '">\uD83C\uDF74 Mitgabeln</button>' +
+          '<button class="mini-btn qr-btn" data-id="' + escapeHtml(cake.id) + '">\uD83D\uDCF1 Gast-QR</button>' +
+          '<button class="mini-btn komm-btn" data-id="' + escapeHtml(cake.id) + '">Kommentare</button>' +
           '<button class="mini-btn verlauf-btn" data-id="' + escapeHtml(cake.id) + '">Verlauf</button>' +
           (unlocked ? '<button class="mini-btn danger del-btn" data-id="' + escapeHtml(cake.id) + '">Entfernen</button>' : '') +
         '</div>' +
+        '<div class="mitgabeln" id="mitgabeln_' + escapeHtml(cake.id) + '"></div>' +
+        '<div class="qrbox" id="qr_' + escapeHtml(cake.id) + '"></div>' +
+        '<div class="komm" id="komm_' + escapeHtml(cake.id) + '"></div>' +
         '<div class="verlauf" id="verlauf_' + escapeHtml(cake.id) + '"></div>' +
       '</div></div>';
   }).join('');
+
+  bilderBeobachten();
 }
 
 // Ein einziger delegierter Handler - funktioniert auch fuer Karten,
 // die erst nach dem Laden neu gerendert werden.
+listArea.addEventListener('input', function (ev) {
+  const r = ev.target.closest('.mg-range');
+  if (!r) return;
+  const out = document.getElementById(r.dataset.out);
+  if (out) out.textContent = r.value;
+});
+
 listArea.addEventListener('click', function (ev) {
   const editBtn = ev.target.closest('.edit-btn');
   if (editBtn) {
@@ -826,6 +985,74 @@ listArea.addEventListener('click', function (ev) {
   const delBtn = ev.target.closest('.del-btn');
   if (delBtn) { deleteCake(delBtn.dataset.id); return; }
 
+  const stimmenBtn = ev.target.closest('.stimmen-btn');
+  if (stimmenBtn) {
+    const id = stimmenBtn.dataset.id;
+    const box = document.getElementById('auf_' + id);
+    const cake = cakes.filter(c => String(c.id) === String(id))[0];
+    if (!box || !cake) return;
+    if (box.classList.contains('open')) { box.classList.remove('open'); aufteilungOffen[id] = false; }
+    else { box.innerHTML = aufteilungHtml(cake); box.classList.add('open'); aufteilungOffen[id] = true; }
+    return;
+  }
+
+  const mgBtn = ev.target.closest('.mitgabeln-btn');
+  if (mgBtn) {
+    const id = mgBtn.dataset.id;
+    const box = document.getElementById('mitgabeln_' + id);
+    if (!box) return;
+    if (box.classList.contains('open')) { box.classList.remove('open'); }
+    else { box.innerHTML = mitgabelnHtml(id); box.classList.add('open'); }
+    return;
+  }
+
+  const mgSend = ev.target.closest('.mg-send');
+  if (mgSend) { sendeBewertung(mgSend.dataset.id, mgSend); return; }
+
+  const qrBtn = ev.target.closest('.qr-btn');
+  if (qrBtn) {
+    const id = qrBtn.dataset.id;
+    const box = document.getElementById('qr_' + id);
+    if (!box) return;
+    if (box.classList.contains('open')) box.classList.remove('open');
+    else zeigeQr(id, box);
+    return;
+  }
+
+  const rateDel = ev.target.closest('.rate-del');
+  if (rateDel) {
+    if (!confirm('Diese Bewertung entfernen?')) return;
+    postToSheet({ action: 'rateDelete', id: rateDel.dataset.id }).then(function () {
+      setTimeout(async function () { await loadCakes(); render(); }, 1400);
+    });
+    return;
+  }
+
+  const kommBtn = ev.target.closest('.komm-btn');
+  if (kommBtn) {
+    const id = kommBtn.dataset.id;
+    const box = document.getElementById('komm_' + id);
+    if (!box) return;
+    if (box.classList.contains('open')) box.classList.remove('open');
+    else zeigeKommentare(id, box);
+    return;
+  }
+  const sendBtn = ev.target.closest('.komm-send');
+  if (sendBtn) { sendeKommentar(sendBtn.dataset.id); return; }
+
+  const kommDel = ev.target.closest('.komm-del');
+  if (kommDel) {
+    if (!confirm('Diesen Kommentar l\u00f6schen?')) return;
+    const kuchenId = kommDel.dataset.kuchen;
+    postToSheet({ action: 'commentDelete', id: kommDel.dataset.id }).then(function () {
+      setTimeout(function () {
+        const box = document.getElementById('komm_' + kuchenId);
+        if (box) zeigeKommentare(kuchenId, box, true);
+      }, 1300);
+    });
+    return;
+  }
+
   const verlaufBtn = ev.target.closest('.verlauf-btn');
   if (verlaufBtn) {
     const id = verlaufBtn.dataset.id;
@@ -844,6 +1071,101 @@ listArea.addEventListener('click', function (ev) {
   const tagBtn = ev.target.closest('.tag');
   if (tagBtn && tagBtn.dataset.tag) { addTagFilter(tagBtn.dataset.tag); }
 });
+
+// ---------- Bild ----------
+const bildInput = document.getElementById('fBild');
+const bildVorschau = document.getElementById('bildVorschau');
+const bildInfo = document.getElementById('bildInfo');
+
+// Handyfotos sind schnell 5-8 MB gross. Wir rechnen sie vor dem Hochladen
+// auf maximal 1200px herunter - das spart Speicher und Ladezeit erheblich.
+function verkleinereBild(file, maxKante, qualitaet) {
+  return new Promise(function (resolve, reject) {
+    const reader = new FileReader();
+    reader.onload = function () {
+      const img = new Image();
+      img.onload = function () {
+        let w = img.width, h = img.height;
+        if (w > h && w > maxKante) { h = Math.round(h * maxKante / w); w = maxKante; }
+        else if (h >= w && h > maxKante) { w = Math.round(w * maxKante / h); h = maxKante; }
+        const cv = document.createElement('canvas');
+        cv.width = w; cv.height = h;
+        cv.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(cv.toDataURL('image/jpeg', qualitaet));
+      };
+      img.onerror = function () { reject(new Error('Bild konnte nicht gelesen werden.')); };
+      img.src = reader.result;
+    };
+    reader.onerror = function () { reject(new Error('Datei konnte nicht gelesen werden.')); };
+    reader.readAsDataURL(file);
+  });
+}
+
+bildInput.addEventListener('change', async function () {
+  const file = bildInput.files && bildInput.files[0];
+  if (!file) return;
+  bildInfo.textContent = 'Bild wird verkleinert \u2026';
+  try {
+    bildDataUrl = await verkleinereBild(file, 900, 0.68);
+    bildEntfernt = false;
+    bildVorschau.src = bildDataUrl;
+    bildVorschau.classList.add('on');
+    const kb = Math.round(bildDataUrl.length * 0.75 / 1024);
+    bildInfo.textContent = 'Bereit \u2013 rund ' + kb + ' KB statt ' + Math.round(file.size / 1024) + ' KB.';
+  } catch (e) {
+    bildDataUrl = '';
+    bildInfo.textContent = 'Bild konnte nicht verarbeitet werden.';
+  }
+});
+
+// ---------- Bilder aus dem Sheet nachladen ----------
+const bildCache = {};
+
+async function holeBild(id) {
+  if (bildCache[id] !== undefined) return bildCache[id];
+  const res = await fetch(APPS_SCRIPT_URL + '?bild=' + encodeURIComponent(id));
+  const data = await res.json();
+  bildCache[id] = (data && data.data) ? data.data : '';
+  return bildCache[id];
+}
+
+async function bildEinsetzen(box) {
+  const id = box.dataset.bildId;
+  if (!id || box.dataset.geladen) return;
+  box.dataset.geladen = '1';
+  try {
+    const daten = await holeBild(id);
+    if (daten) {
+      const img = document.createElement('img');
+      img.alt = 'Foto';
+      img.src = daten;
+      box.innerHTML = '';
+      box.appendChild(img);
+    } else {
+      box.innerHTML = '<div class="bild-platzhalter">Kein Foto hinterlegt.</div>';
+    }
+  } catch (e) {
+    box.innerHTML = '<div class="bild-platzhalter">Foto konnte nicht geladen werden.</div>';
+    box.dataset.geladen = '';
+  }
+}
+
+// Bilder erst laden, wenn die Karte sichtbar wird - spart Datenvolumen
+let bildBeobachter = null;
+if ('IntersectionObserver' in window) {
+  bildBeobachter = new IntersectionObserver(function (eintraege) {
+    eintraege.forEach(function (e) {
+      if (e.isIntersecting) { bildEinsetzen(e.target); bildBeobachter.unobserve(e.target); }
+    });
+  }, { rootMargin: '200px' });
+}
+
+function bilderBeobachten() {
+  document.querySelectorAll('.cake-bild[data-bild-id]').forEach(function (box) {
+    if (bildBeobachter) bildBeobachter.observe(box);
+    else bildEinsetzen(box);
+  });
+}
 
 // ---------- Verlauf ----------
 const FELD_LABELS = {};
@@ -896,6 +1218,159 @@ async function zeigeVerlauf(id, box) {
     box.innerHTML = verlaufHtml(alle.filter(function (v) { return String(v.kuchenId) === String(id); }));
   } catch (e) {
     box.innerHTML = '<div class="verlauf-leer">Verlauf konnte nicht geladen werden.</div>';
+  }
+}
+
+// ---------- Mitbewerten, Aufteilung, QR ----------
+function gastLink(id) {
+  return new URL('bewerten.html?id=' + encodeURIComponent(id), location.href).href;
+}
+
+function aufteilungHtml(cake) {
+  const stimmen = stimmenFuer(cake);
+  const zeilen = stimmen.map(function (st) {
+    const werte = GENUSS_CRITERIA.map(function (c) {
+      return c.label.slice(0, 4) + ' ' + (st[c.key] || 0);
+    }).join(' \u00b7 ');
+    const summe = GENUSS_CRITERIA.reduce(function (a, c) {
+      const v = Number(st[c.key] || 0);
+      return a + (c.invertiert ? SCALE_MAX - v : v);
+    }, 0) / GENUSS_CRITERIA.length;
+    const loeschbar = (unlocked && st.quelle === 'extra')
+      ? ' <button class="mini-btn rate-del" data-id="' + escapeHtml(st.id) + '" data-kuchen="' +
+        escapeHtml(cake.id) + '" style="padding:1px 6px; font-size:10.5px;">\u00d7</button>' : '';
+    return '<div class="auf-zeile">' +
+      '<div class="auf-wer">' + escapeHtml(st.wer || 'ohne Namen') +
+        (st.quelle === 'basis' ? '<span class="auf-basis">Eintrag</span>' : '') + loeschbar + '</div>' +
+      '<div class="auf-werte">' + escapeHtml(werte) + '</div>' +
+      '<div class="auf-schnitt">' + summe.toFixed(1) + '</div>' +
+    '</div>';
+  }).join('');
+  return '<div class="auf-kopf">Wer hat wie bewertet</div>' + zeilen;
+}
+
+function mitgabelnHtml(id) {
+  const sliders = GENUSS_CRITERIA.map(function (c) {
+    return '<div class="mg-slider">' +
+      '<label for="mg_' + id + '_' + c.key + '">' + c.label + ' <b id="mgv_' + id + '_' + c.key + '">4</b></label>' +
+      '<input type="range" min="0" max="' + SCALE_MAX + '" value="4" id="mg_' + id + '_' + c.key + '" data-out="mgv_' + id + '_' + c.key + '" class="mg-range" />' +
+      '<div class="slider-hint"><span>' + c.low + '</span><span>' + c.high + '</span></div>' +
+    '</div>';
+  }).join('');
+  return '<div class="auf-kopf">Deine eigene Bewertung</div>' +
+    '<input type="text" class="mg-name" id="mgname_' + id + '" placeholder="Dein Name" value="' + escapeHtml(bearbeiterName) + '" />' +
+    '<div class="mg-grid">' + sliders + '</div>' +
+    '<button class="btn-primary mg-send" data-id="' + id + '" style="padding:10px 20px; font-size:13.5px;">Bewertung abgeben</button>';
+}
+
+async function sendeBewertung(kuchenId, btn) {
+  const nameEl = document.getElementById('mgname_' + kuchenId);
+  const wer = nameEl ? nameEl.value.trim() : '';
+  if (!wer) { if (nameEl) nameEl.focus(); return; }
+
+  const daten = { action: 'rate', id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random()), kuchenId: kuchenId, wer: wer };
+  GENUSS_CRITERIA.forEach(function (c) {
+    const el = document.getElementById('mg_' + kuchenId + '_' + c.key);
+    daten[c.key] = el ? Number(el.value) : 0;
+  });
+
+  btn.disabled = true; btn.textContent = 'Wird gesendet \u2026';
+  try {
+    await postToSheet(daten);
+    await new Promise(function (r) { setTimeout(r, 1500); });
+    await loadCakes();
+    render();
+    showInfo('Danke \u2013 Bewertung von ' + escapeHtml(wer) + ' ist drin.');
+    setTimeout(clearErrorBanner, 2500);
+  } catch (e) {
+    showError('Bewertung konnte nicht gespeichert werden.');
+    btn.disabled = false; btn.textContent = 'Bewertung abgeben';
+  }
+}
+
+function zeigeQr(id, box) {
+  const url = gastLink(id);
+  box.innerHTML = '<div class="auf-kopf">QR-Code f\u00fcr G\u00e4ste</div>' +
+    '<div class="qr-canvas" id="qrc_' + id + '"></div>' +
+    '<div class="qr-hinweis">Abscannen lassen \u2013 G\u00e4ste bewerten diesen Kuchen dann direkt am eigenen Handy, ohne Kennwort.</div>' +
+    '<a class="qr-link" href="' + escapeHtml(url) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(url) + '</a>';
+  box.classList.add('open');
+
+  const ziel = document.getElementById('qrc_' + id);
+  function malen() {
+    ziel.innerHTML = '';
+    new QRCode(ziel, { text: url, width: 190, height: 190, correctLevel: QRCode.CorrectLevel.M });
+  }
+  if (window.QRCode) { malen(); return; }
+  const sk = document.createElement('script');
+  sk.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+  sk.onload = malen;
+  sk.onerror = function () { ziel.innerHTML = '<div class="qr-hinweis">QR-Code konnte nicht geladen werden \u2013 der Link darunter funktioniert trotzdem.</div>'; };
+  document.head.appendChild(sk);
+}
+
+// ---------- Kommentare ----------
+async function ladeKommentare(neu) {
+  if (kommentarDaten && !neu) return kommentarDaten;
+  const res = await fetch(APPS_SCRIPT_URL + '?kommentare=1');
+  const data = await res.json();
+  kommentarDaten = Array.isArray(data) ? data : [];
+  return kommentarDaten;
+}
+
+function kommentarHtml(id, liste) {
+  const eintraege = liste.length
+    ? liste.slice().sort(function (a, b) { return String(a.zeitstempel) < String(b.zeitstempel) ? -1 : 1; })
+        .map(function (k) {
+          return '<div class="komm-zeile">' +
+            '<div class="komm-kopf"><b>' + escapeHtml(k.wer) + '</b> \u00b7 ' + escapeHtml(datumKurz(k.zeitstempel)) +
+            (unlocked ? ' \u00b7 <button class="mini-btn komm-del" data-id="' + escapeHtml(k.id) +
+              '" data-kuchen="' + escapeHtml(id) + '" style="padding:1px 6px; font-size:11px;">l\u00f6schen</button>' : '') +
+            '</div>' +
+            '<div class="komm-text">' + escapeHtml(k.text) + '</div></div>';
+        }).join('')
+    : '<div class="komm-leer">Noch keine Kommentare. Sei die erste Stimme.</div>';
+
+  const eingabe = unlocked
+    ? '<div class="komm-neu">' +
+        '<textarea id="kommtext_' + escapeHtml(id) + '" placeholder="Was f\u00e4llt dir zu diesem Kuchen ein?"></textarea>' +
+        '<button class="btn-primary komm-send" data-id="' + escapeHtml(id) + '" style="align-self:flex-end; padding:9px 16px; font-size:13px;">Senden</button>' +
+      '</div>'
+    : '<div class="komm-leer" style="margin-top:8px;">Zum Kommentieren oben freischalten.</div>';
+
+  return eintraege + eingabe;
+}
+
+async function zeigeKommentare(id, box, neu) {
+  if (!box.innerHTML) box.innerHTML = '<div class="komm-leer">Kommentare werden geladen \u2026</div>';
+  box.classList.add('open');
+  try {
+    const alle = await ladeKommentare(neu);
+    box.innerHTML = kommentarHtml(id, alle.filter(function (k) { return String(k.kuchenId) === String(id); }));
+  } catch (e) {
+    box.innerHTML = '<div class="komm-leer">Kommentare konnten nicht geladen werden.</div>';
+  }
+}
+
+async function sendeKommentar(kuchenId) {
+  const ta = document.getElementById('kommtext_' + kuchenId);
+  if (!ta) return;
+  const text = ta.value.trim();
+  if (!text) { ta.focus(); return; }
+  ta.disabled = true;
+  try {
+    await postToSheet({
+      action: 'comment',
+      id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random()),
+      kuchenId: kuchenId,
+      text: text
+    });
+    await new Promise(function (r) { setTimeout(r, 1400); });
+    const box = document.getElementById('komm_' + kuchenId);
+    if (box) await zeigeKommentare(kuchenId, box, true);
+  } catch (e) {
+    showError('Kommentar konnte nicht gespeichert werden.');
+    ta.disabled = false;
   }
 }
 

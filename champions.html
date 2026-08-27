@@ -217,6 +217,11 @@
   <div class="cta-wrap">
     <button class="btn-reveal" id="revealBtn">Enth&uuml;llung starten</button>
     <div class="tempo-row">
+      <span>Wertung:</span>
+      <button class="tempo-btn on" data-wertung="alle">Alle Stimmen</button>
+      <button class="tempo-btn" data-wertung="prio">&#128081; Nur Brautpaar</button>
+    </div>
+    <div class="tempo-row">
       <span>Tempo:</span>
       <button class="tempo-btn" data-tempo="0.7">Z&uuml;gig</button>
       <button class="tempo-btn on" data-tempo="1">Normal</button>
@@ -250,7 +255,6 @@ const RATING_CRITERIA = [
   { key:'heaviness', label:'F\u00fcllig', genuss:true, invertiert:true },
   { key:'texture', label:'Textur', genuss:true },
   { key:'appearance', label:'Optik', genuss:true },
-  { key:'crowdPleaser', label:'Gef\u00e4llt allen', genuss:true },
   { key:'heat', label:'Hitzebest\u00e4ndigkeit' },
   { key:'makeAhead', label:'Vorbereitbarkeit' },
   { key:'transport', label:'Transport' },
@@ -260,11 +264,25 @@ const GENUSS = RATING_CRITERIA.filter(c => c.genuss);
 const TAG_KEYS = ['flavourTags','frostingTags','styleTags','seasonTags','formTags'];
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 let cakes = [];
+let bewertungen = [];
+let nurPrio = false;
 
 function num(v){ const n = Number(v); return isNaN(n) ? 0 : n; }
-function overall(c){
+function stimmenFuer(cake){
+  const eigene = { wer: cake.erstelltVon || 'Ersteintrag', prio: cake.erstelltPrio };
+  GENUSS.forEach(function(k){ eigene[k.key] = num(cake[k.key]); });
+  const alle = [eigene].concat(bewertungen.filter(function(b){ return String(b.kuchenId) === String(cake.id); }));
+  if (nurPrio) return alle.filter(function(st){ return st.prio === 'ja'; });
+  return alle;
+}
+function hatStimmen(cake){ return stimmenFuer(cake).length > 0; }
+
+function overall(cake){
+  const st = stimmenFuer(cake);
+  if (!st.length) return 0;
   return GENUSS.reduce(function(a,k){
-    const v = num(c[k.key]); return a + (k.invertiert ? SCALE_MAX - v : v);
+    const schnitt = st.reduce(function(x,s){ return x + num(s[k.key]); },0) / st.length;
+    return a + (k.invertiert ? SCALE_MAX - schnitt : schnitt);
   },0) / GENUSS.length;
 }
 function esc(s){ const d=document.createElement('div'); d.textContent=(s==null?'':String(s)); return d.innerHTML; }
@@ -530,7 +548,6 @@ function buildAwards(){
     {e:'\uD83D\uDE9A', t:'Goldene Sto\u00dfd\u00e4mpfer', k:'transport', n:'\u00dcberlebt Schlagl\u00f6cher, Kreisverkehre und Onkel Werners Fahrstil.'},
     {e:'\uD83E\uDEB6', t:'Federgewicht', k:'heaviness', inv:true, n:'Nach drei G\u00e4ngen noch essbar. Das ist keine Kleinigkeit, das ist Kunst.'},
     {e:'\uD83D\uDC85', t:'Sch\u00f6nheitsk\u00f6nigin', k:'appearance', n:'Wird mehr fotografiert als das Brautpaar. Wir haben nachgez\u00e4hlt.'},
-    {e:'\uD83C\uDFAF', t:'Publikumsliebling', k:'crowdPleaser', n:'Sogar die schwierige Tante nimmt ein zweites St\u00fcck.'},
     {e:'\uD83D\uDE05', t:'Gn\u00e4dig zum B\u00e4cker', k:'doability', n:'Kein n\u00e4chtlicher Nervenzusammenbruch erforderlich.'},
     {e:'\u23F0', t:'Der Vorausschauende', k:'makeAhead', n:'L\u00e4sst sich backen, bevor das Chaos beginnt.'},
     {e:'\uD83E\uDD44', t:'Beste Gabel', k:'texture', n:'Krume wie ein Versprechen.'}
@@ -598,12 +615,14 @@ async function runReveal(){
   podium.innerHTML=''; awardsWrap.innerHTML=''; statsWrap.innerHTML='';
   document.getElementById('msg').innerHTML=''; applause.classList.remove('on');
 
-  const ranked = cakes.slice().sort(function(a,b){ return overall(b)-overall(a); });
+  const ranked = cakes.filter(hatStimmen).sort(function(a,b){ return overall(b)-overall(a); });
 
   if (!ranked.length){
     document.getElementById('msg').innerHTML =
-      '<div class="msg"><b>Ein leeres Podium ist auch eine Aussage.</b>'+
-      'Es wurde noch kein einziger Kuchen eingetragen. Das ist entweder bewundernswerte Disziplin oder ein Notfall.</div>';
+      (nurPrio
+        ? '<div class="msg"><b>Das Brautpaar schweigt.</b>In diesem Modus z\u00e4hlen nur Stimmen, die mit dem Brautpaar-Kennwort abgegeben wurden \u2013 und davon gibt es noch keine. Zur\u00fcck auf &bdquo;Alle Stimmen&ldquo;, oder schnell mitgabeln.</div>'
+        : '<div class="msg"><b>Ein leeres Podium ist auch eine Aussage.</b>'+
+          'Es wurde noch kein einziger Kuchen eingetragen. Das ist entweder bewundernswerte Disziplin oder ein Notfall.</div>');
     revealBtn.disabled=false; return;
   }
 
@@ -614,7 +633,8 @@ async function runReveal(){
   await say('Meine sehr verehrten Damen und Herren \u2026', 1500);
   await say('\u2026 willkommen zur einzigen Kuchen-Gala mit notariell begleiteter Auswertung.', 2100);
   await beglaubigung();
-  await say('\u2026 nach '+cakes.length+' Kandidaten und einer nicht n\u00e4her bezifferten Menge Butter \u2026', 2000);
+  await say('\u2026 nach '+ranked.length+' Kandidaten und einer nicht n\u00e4her bezifferten Menge Butter \u2026', 2000);
+  if (nurPrio) await say('\uD83D\uDC51 Heute z\u00e4hlt ausschlie\u00dflich die Stimme des Brautpaars. Alle anderen d\u00fcrfen zusehen.', 2400);
 
   if (ranked[2]){
     await say('Auf dem dritten Platz \u2026', 1500);
@@ -665,10 +685,18 @@ async function runReveal(){
   revealBtn.textContent = 'Nochmal, mit Gef\u00fchl';
 }
 
-document.querySelectorAll('.tempo-btn').forEach(function(b){
+document.querySelectorAll('.tempo-btn[data-tempo]').forEach(function(b){
   b.addEventListener('click', function(){
     tempo = parseFloat(b.dataset.tempo);
-    document.querySelectorAll('.tempo-btn').forEach(function(x){ x.classList.remove('on'); });
+    document.querySelectorAll('.tempo-btn[data-tempo]').forEach(function(x){ x.classList.remove('on'); });
+    b.classList.add('on');
+  });
+});
+
+document.querySelectorAll('.tempo-btn[data-wertung]').forEach(function(b){
+  b.addEventListener('click', function(){
+    nurPrio = (b.dataset.wertung === 'prio');
+    document.querySelectorAll('.tempo-btn[data-wertung]').forEach(function(x){ x.classList.remove('on'); });
     b.classList.add('on');
   });
 });
